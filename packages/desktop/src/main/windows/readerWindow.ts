@@ -133,3 +133,9 @@ export function closeReaderWindow(): void {
     readerWin.hide();
   }
 }
+
+export function minimizeReaderWindow(): void {
+  if (readerWin && !readerWin.isDestroyed()) {
+    readerWin.minimize();
+  }
+}

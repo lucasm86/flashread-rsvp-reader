@@ -62,9 +62,12 @@ o `npm run dev` desde la raíz para build + start en un paso.
 |---|---|
 | `Espacio` | Play / pausa |
 | `←` / `→` | Chunk anterior / siguiente |
+| `Shift+←` / `Shift+→` | Párrafo anterior / siguiente |
 | `↑` / `↓` | Velocidad ±25 wpm |
 | `T` | Mostrar/ocultar panel de texto completo |
 | `Esc` | Cerrar (ocultar) el lector |
+
+La barra de controles también tiene botones ⏪/⏩ para saltar de párrafo, y la esquina superior derecha de la ventana tiene minimizar/cerrar discretos (la ventana no usa marco nativo).
 
 ## Fase 2 (pendiente)
 

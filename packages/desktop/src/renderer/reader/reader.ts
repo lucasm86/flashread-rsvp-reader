@@ -36,6 +36,7 @@ interface FlashReadReaderAPI {
   togglePanel: () => void;
   openSettings: () => void;
   closeReader: () => void;
+  minimizeReader: () => void;
 }
 
 interface Window {
@@ -122,6 +123,24 @@ interface Window {
     index = Math.max(0, Math.min(target, chunks.length - 1));
     renderChunk();
     if (playing) scheduleNext();
+  }
+
+  function currentParagraphIdx(): number {
+    return paragraphs.findIndex((r) => index >= r.startChunkIndex && index <= r.endChunkIndex);
+  }
+
+  function nextParagraph(): void {
+    const cur = currentParagraphIdx();
+    const target = cur >= 0 && cur < paragraphs.length - 1 ? paragraphs[cur + 1].startChunkIndex : chunks.length - 1;
+    jumpToChunk(target);
+  }
+
+  function prevParagraph(): void {
+    const cur = currentParagraphIdx();
+    if (cur < 0) return;
+    const atStart = index <= paragraphs[cur].startChunkIndex;
+    const target = atStart && cur > 0 ? paragraphs[cur - 1].startChunkIndex : paragraphs[cur].startChunkIndex;
+    jumpToChunk(target);
   }
 
   function renderChunk(): void {
@@ -232,10 +251,14 @@ interface Window {
   btnPlay.addEventListener("click", toggle);
   document.getElementById("btn-next")!.addEventListener("click", next);
   document.getElementById("btn-prev")!.addEventListener("click", prev);
+  document.getElementById("btn-next-paragraph")!.addEventListener("click", nextParagraph);
+  document.getElementById("btn-prev-paragraph")!.addEventListener("click", prevParagraph);
   document.getElementById("btn-wpm-up")!.addEventListener("click", () => changeWpm(25));
   document.getElementById("btn-wpm-down")!.addEventListener("click", () => changeWpm(-25));
   document.getElementById("btn-settings")!.addEventListener("click", () => window.flashread.openSettings());
   btnTogglePanel.addEventListener("click", () => window.flashread.togglePanel());
+  document.getElementById("btn-window-minimize")!.addEventListener("click", () => window.flashread.minimizeReader());
+  document.getElementById("btn-window-close")!.addEventListener("click", () => window.flashread.closeReader());
 
   document.getElementById("btn-toggle-controls")!.addEventListener("click", () => {
     controls.classList.add("hidden");
@@ -254,11 +277,13 @@ interface Window {
         break;
       case "ArrowRight":
         e.preventDefault();
-        next();
+        if (e.shiftKey) nextParagraph();
+        else next();
         break;
       case "ArrowLeft":
         e.preventDefault();
-        prev();
+        if (e.shiftKey) prevParagraph();
+        else prev();
         break;
       case "ArrowUp":
         e.preventDefault();

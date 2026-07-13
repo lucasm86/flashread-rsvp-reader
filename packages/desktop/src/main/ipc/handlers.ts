@@ -6,6 +6,7 @@ import {
   openReaderWithText,
   refreshReaderChunks,
   closeReaderWindow,
+  minimizeReaderWindow,
   setReaderPanelVisible,
 } from "../windows/readerWindow";
 import { openSettingsWindow } from "../windows/settingsWindow";
@@ -51,6 +52,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.on("reader:close", () => {
     closeReaderWindow();
+  });
+
+  ipcMain.on("reader:minimize", () => {
+    minimizeReaderWindow();
   });
 
   ipcMain.on("reader:toggle-panel", () => {

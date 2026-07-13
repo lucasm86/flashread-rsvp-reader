@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld("flashread", {
   togglePanel: () => ipcRenderer.send("reader:toggle-panel"),
   openSettings: () => ipcRenderer.send("reader:open-settings"),
   closeReader: () => ipcRenderer.send("reader:close"),
+  minimizeReader: () => ipcRenderer.send("reader:minimize"),
 });

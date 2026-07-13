@@ -232,3 +232,34 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
+
+#window-controls {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+  z-index: 3;
+}
+
+#window-controls button {
+  background: transparent;
+  border: none;
+  color: var(--text-color, #e5e5e5);
+  opacity: 0.32;
+  font-size: 11px;
+  width: 24px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0;
+  transition: opacity 100ms ease, background 100ms ease;
+}
+
+#window-controls button:hover {
+  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.12);
+}

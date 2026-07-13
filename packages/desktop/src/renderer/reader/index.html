@@ -8,6 +8,11 @@
   </head>
   <body>
     <div id="app">
+      <div id="window-controls">
+        <button id="btn-window-minimize" title="Minimizar">─</button>
+        <button id="btn-window-close" title="Cerrar">✕</button>
+      </div>
+
       <div id="layout">
         <div id="reader-main">
           <div id="word-stage">
@@ -21,9 +26,11 @@
           <div id="progress-bar"><div id="progress-fill"></div></div>
 
           <div id="controls" class="visible">
+            <button id="btn-prev-paragraph" title="Párrafo anterior (Shift+←)">⏪</button>
             <button id="btn-prev" title="Anterior (←)">⏮</button>
             <button id="btn-play" title="Reproducir / Pausar (Espacio)">▶</button>
             <button id="btn-next" title="Siguiente (→)">⏭</button>
+            <button id="btn-next-paragraph" title="Párrafo siguiente (Shift+→)">⏩</button>
             <div id="wpm-control">
               <button id="btn-wpm-down" title="Bajar velocidad (↓)">−</button>
               <span id="wpm-value">300</span><span class="wpm-label">wpm</span>
