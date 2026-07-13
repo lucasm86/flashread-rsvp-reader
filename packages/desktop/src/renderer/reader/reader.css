@@ -256,6 +256,15 @@ body {
   margin-right: 2px;
 }
 
+#timer-display {
+  font-size: 12px;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
 #btn-show-controls {
   position: absolute;
   left: 50%;

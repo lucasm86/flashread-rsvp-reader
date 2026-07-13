@@ -83,6 +83,7 @@ interface Window {
   const progressFill = document.getElementById("progress-fill") as HTMLDivElement;
   const btnPlay = document.getElementById("btn-play") as HTMLButtonElement;
   const wpmValueEl = document.getElementById("wpm-value") as HTMLSpanElement;
+  const timerDisplay = document.getElementById("timer-display") as HTMLSpanElement;
   const controls = document.getElementById("controls") as HTMLDivElement;
   const btnShowControls = document.getElementById("btn-show-controls") as HTMLButtonElement;
   const textPanel = document.getElementById("text-panel") as HTMLDivElement;
@@ -123,6 +124,7 @@ interface Window {
   let index = 0;
   let playing = false;
   let timer: number | null = null;
+  let remainingMsSuffix: number[] = [];
 
   function applyStyles(): void {
     const root = document.documentElement.style;
@@ -390,6 +392,29 @@ interface Window {
     jumpToChunk(target);
   }
 
+  function buildRemainingSuffix(): void {
+    remainingMsSuffix = new Array(chunks.length + 1);
+    remainingMsSuffix[chunks.length] = 0;
+    const msPerWord = 60000 / settings.wpm;
+    for (let i = chunks.length - 1; i >= 0; i--) {
+      const delay = msPerWord * chunks[i].wordCount * chunks[i].pauseMultiplier;
+      remainingMsSuffix[i] = delay + remainingMsSuffix[i + 1];
+    }
+  }
+
+  function formatHms(ms: number): string {
+    const totalSeconds = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+
+  function updateTimerDisplay(): void {
+    timerDisplay.textContent = formatHms(remainingMsSuffix[index] ?? 0);
+  }
+
   function renderChunk(): void {
     const chunk = chunks[index];
     if (!chunk) return;
@@ -403,6 +428,7 @@ interface Window {
     progressFill.style.width = pct + "%";
 
     updatePanelHighlight();
+    updateTimerDisplay();
   }
 
   function clearTimer(): void {
@@ -474,6 +500,8 @@ interface Window {
     settings.wpm = Math.max(100, Math.min(1000, settings.wpm + delta));
     wpmValueEl.textContent = String(settings.wpm);
     window.flashread.updateWpm(settings.wpm);
+    buildRemainingSuffix();
+    updateTimerDisplay();
     if (playing) scheduleNext();
   }
 
@@ -487,6 +515,7 @@ interface Window {
     applyStyles();
     applyPanelVisibility(settings.showTextPanel);
     buildPanel();
+    buildRemainingSuffix();
     renderChunk();
     if (resetPosition) switchPanelTab("text");
     if (resetPosition || wasPlaying) play();

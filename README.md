@@ -84,7 +84,7 @@ Genera `packages/desktop/release/FlashRead <version>.exe` — un ejecutable port
 | `T` | Mostrar/ocultar panel de texto completo |
 | `Esc` | Cerrar (ocultar) el lector |
 
-La barra de controles también tiene botones ⏪/⏩ para saltar de párrafo, y la esquina superior derecha de la ventana tiene minimizar/cerrar discretos (la ventana no usa marco nativo).
+La barra de controles también tiene botones ⏪/⏩ para saltar de párrafo, un contador `hh:mm:ss` con el tiempo estimado restante (recalculado en base a las palabras que faltan, la velocidad actual y las pausas de puntuación), y la esquina superior derecha de la ventana tiene minimizar/cerrar discretos (la ventana no usa marco nativo).
 
 ## Fase 2 (pendiente)
 
