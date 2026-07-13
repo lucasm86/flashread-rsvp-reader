@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, screen } from "electron";
 import path from "node:path";
 import { ReaderSettings, ParagraphRange, parseDocument, buildChunks, buildParagraphRanges } from "@flashread/core";
 import { getStore } from "../services/store";
@@ -103,10 +103,28 @@ export function refreshReaderChunks(settings: ReaderSettings): void {
   readerWin.webContents.send("reader:settings-updated", payload);
 }
 
+const CENTER_TOLERANCE_PX = 2;
+
 export function setReaderPanelVisible(showTextPanel: boolean): void {
   if (!readerWin || readerWin.isDestroyed()) return;
-  const [, height] = readerWin.getSize();
-  readerWin.setSize(windowWidthFor(showTextPanel), height);
+
+  const bounds = readerWin.getBounds();
+  const workArea = screen.getDisplayMatching(bounds).workArea;
+  const currentCenterX = bounds.x + bounds.width / 2;
+  const screenCenterX = workArea.x + workArea.width / 2;
+  const wasCentered = Math.abs(currentCenterX - screenCenterX) <= CENTER_TOLERANCE_PX;
+
+  const newWidth = windowWidthFor(showTextPanel);
+
+  if (wasCentered) {
+    const newX = Math.round(screenCenterX - newWidth / 2);
+    readerWin.setBounds({ x: newX, y: bounds.y, width: newWidth, height: bounds.height });
+  } else {
+    // Window was moved by the user: keep its left edge fixed rather than
+    // forcing it back to the middle of the screen.
+    readerWin.setSize(newWidth, bounds.height);
+  }
+
   readerWin.webContents.send("reader:panel-visibility", { showTextPanel });
 }
 
