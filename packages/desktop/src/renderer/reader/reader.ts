@@ -51,6 +51,7 @@ interface FlashReadReaderAPI {
   onLoadText: (cb: (payload: LoadPayload) => void) => void;
   onSettingsUpdated: (cb: (payload: LoadPayload) => void) => void;
   onPanelVisibility: (cb: (payload: { showTextPanel: boolean }) => void) => void;
+  onFocusNewTab: (cb: () => void) => void;
   updateWpm: (wpm: number) => void;
   togglePanel: () => void;
   openSettings: () => void;
@@ -530,6 +531,11 @@ interface Window {
     if (active?.dataset.panelTab === "history") void refreshPanelHistory();
   });
   window.flashread.onPanelVisibility(({ showTextPanel }) => applyPanelVisibility(showTextPanel));
+  window.flashread.onFocusNewTab(() => {
+    applyPanelVisibility(true);
+    switchPanelTab("new");
+    panelTextInput.focus();
+  });
 
   btnPlay.addEventListener("click", toggle);
   document.getElementById("btn-next")!.addEventListener("click", next);

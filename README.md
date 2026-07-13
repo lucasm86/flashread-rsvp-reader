@@ -12,11 +12,13 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
   - **Nuevo**: pegar o arrastrar un texto nuevo sin salir del lector.
   - **Biblioteca**: textos guardados a propósito, para volver a leerlos cuando quieras.
   - **Historial**: registro cronológico de todo lo leído, esté o no guardado en la biblioteca (podés promoverlo a biblioteca desde ahí con un clic).
+
+  No hay una ventana de "pegar texto" separada: el ícono de la bandeja abre directamente el lector con el panel lateral en la pestaña "Nuevo", y desde Biblioteca/Historial "Leer" pasa directo a la lectura mostrando el avance en el panel.
 - **Cuatro vías para llevar texto al lector**:
   - Atajo global de portapapeles (`Ctrl+Alt+R` configurable)
-  - Arrastrar y soltar archivos `.txt`, `.pdf`, `.docx`, `.epub`
+  - Arrastrar y soltar archivos `.txt`, `.pdf`, `.docx`, `.epub` (sobre el panel "Nuevo" del lector)
   - Extensión de navegador (Chrome/Edge, Manifest V3) vía menú contextual
-  - Ventana de pegado manual (con las mismas pestañas Nuevo/Biblioteca/Historial)
+  - Pegado manual en la pestaña "Nuevo" del propio lector
 - **App de bandeja del sistema**, instancia única, configuración persistente local (sin backend, 100% offline).
 - **Empaquetado como `.exe` portátil** (sin instalador) vía `electron-builder` — ver [Empaquetar para distribución](#empaquetar-para-distribución).
 
@@ -60,9 +62,9 @@ o `npm run dev` desde la raíz para build + start en un paso.
 ### Probar cada vía de ingreso de texto
 
 1. **Portapapeles**: copiá texto (`Ctrl+C`) y apretá `Ctrl+Alt+R`
-2. **Drag&drop**: ícono de la bandeja → arrastrá un `.txt`/`.pdf`/`.docx`/`.epub`
+2. **Drag&drop**: ícono de la bandeja (abre el lector en la pestaña "Nuevo") → arrastrá un `.txt`/`.pdf`/`.docx`/`.epub` sobre el panel
 3. **Extensión**: como se describe arriba
-4. **Pegado manual**: ícono de la bandeja → pegá texto → "Leer" o `Ctrl+Enter`
+4. **Pegado manual**: ícono de la bandeja → pegá texto en la pestaña "Nuevo" → "Leer" o `Ctrl+Enter`
 
 ### Empaquetar para distribución
 

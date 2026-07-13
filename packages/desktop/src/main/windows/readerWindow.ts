@@ -107,6 +107,29 @@ export function openReaderWithText(text: string, source: TextSource, opts: OpenR
   win.focus();
 }
 
+export function openReaderForNewText(): void {
+  const store = getStore();
+  const settings = store.store;
+  const win = getOrCreateReaderWindow(settings);
+
+  const activate = () => {
+    if (!store.get("showTextPanel")) {
+      store.set("showTextPanel", true);
+      setReaderPanelVisible(true);
+    }
+    win.webContents.send("reader:focus-new-tab");
+  };
+
+  if (win.webContents.isLoading()) {
+    win.webContents.once("did-finish-load", activate);
+  } else {
+    activate();
+  }
+
+  win.show();
+  win.focus();
+}
+
 export function refreshReaderChunks(settings: ReaderSettings): void {
   if (!readerWin || readerWin.isDestroyed() || !currentRawText) return;
   readerWin.setAlwaysOnTop(settings.alwaysOnTop);

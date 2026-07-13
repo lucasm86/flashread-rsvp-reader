@@ -4,8 +4,7 @@ import { getStore } from "./services/store";
 import { startLocalServer } from "./services/localServer";
 import { setGlobalShortcut } from "./services/shortcutManager";
 import { registerIpcHandlers } from "./ipc/handlers";
-import { openReaderWithText } from "./windows/readerWindow";
-import { openPasteWindow } from "./windows/pasteWindow";
+import { openReaderWithText, openReaderForNewText } from "./windows/readerWindow";
 import { openSettingsWindow } from "./windows/settingsWindow";
 
 const gotLock = app.requestSingleInstanceLock();
@@ -15,8 +14,8 @@ if (!gotLock) {
 } else {
   app.on("second-instance", () => {
     // Another launch attempt happened (e.g. user double-clicked the exe
-    // again). Surface the paste window instead of spawning a new app.
-    openPasteWindow();
+    // again). Surface the reader instead of spawning a new app.
+    openReaderForNewText();
   });
 
   app.whenReady().then(() => {
@@ -25,7 +24,7 @@ if (!gotLock) {
     registerIpcHandlers();
 
     createTray({
-      onOpenPaste: () => openPasteWindow(),
+      onOpenPaste: () => openReaderForNewText(),
       onOpenSettings: () => openSettingsWindow(),
       onQuit: () => app.quit(),
     });

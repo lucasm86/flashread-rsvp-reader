@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld("flashread", {
   onPanelVisibility: (cb: (payload: { showTextPanel: boolean }) => void) => {
     ipcRenderer.on("reader:panel-visibility", (_e, payload) => cb(payload));
   },
+  onFocusNewTab: (cb: () => void) => {
+    ipcRenderer.on("reader:focus-new-tab", () => cb());
+  },
   updateWpm: (wpm: number) => ipcRenderer.send("reader:update-wpm", wpm),
   togglePanel: () => ipcRenderer.send("reader:toggle-panel"),
   openSettings: () => ipcRenderer.send("reader:open-settings"),
