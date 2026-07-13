@@ -7,21 +7,27 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
 ## Fase 1 (MVP) — completa
 
 - **Motor de lectura**: ventana sin decoración, siempre visible opcionalmente, ORP resaltado, WPM configurable (100–1000), pausas automáticas en fin de oración/coma, chunks de 1-3 palabras, fuente/colores configurables, controles flotantes ocultables, atajos de teclado, barra de progreso.
-- **Panel de texto lateral**: muestra el documento completo dividido en párrafos, resalta la posición de lectura en tiempo real con auto-scroll, y permite saltar a cualquier palabra haciendo clic (útil para saltear rápido partes del texto).
+- **Panel lateral con pestañas** (dentro del propio lector, tecla `T` o botón 📄):
+  - **Texto**: el documento completo dividido en párrafos, con la posición de lectura resaltada en tiempo real (auto-scroll) y salto a cualquier palabra con un clic.
+  - **Nuevo**: pegar o arrastrar un texto nuevo sin salir del lector.
+  - **Biblioteca**: textos guardados a propósito, para volver a leerlos cuando quieras.
+  - **Historial**: registro cronológico de todo lo leído, esté o no guardado en la biblioteca (podés promoverlo a biblioteca desde ahí con un clic).
 - **Cuatro vías para llevar texto al lector**:
   - Atajo global de portapapeles (`Ctrl+Alt+R` configurable)
-  - Arrastrar y soltar archivos `.txt`, `.pdf`, `.docx`
+  - Arrastrar y soltar archivos `.txt`, `.pdf`, `.docx`, `.epub`
   - Extensión de navegador (Chrome/Edge, Manifest V3) vía menú contextual
-  - Ventana de pegado manual
+  - Ventana de pegado manual (con las mismas pestañas Nuevo/Biblioteca/Historial)
 - **App de bandeja del sistema**, instancia única, configuración persistente local (sin backend, 100% offline).
+- **Empaquetado como `.exe` portátil** (sin instalador) vía `electron-builder` — ver [Empaquetar para distribución](#empaquetar-para-distribución).
 
 ## Stack
 
 - Electron + TypeScript
 - Monorepo con npm workspaces: [`packages/core`](packages/core) (parser de texto, chunker, ORP y timing, compartido) + [`packages/desktop`](packages/desktop) (app Electron) + [`packages/extension`](packages/extension) (extensión MV3)
-- `electron-store` para persistencia local de configuración
-- `pdf-parse` / `mammoth` para extracción de texto de PDF/DOCX
+- `electron-store` para persistencia local de configuración, biblioteca e historial
+- `pdf-parse` / `mammoth` / `epub2` para extracción de texto de PDF/DOCX/EPUB
 - Comunicación extensión↔app vía WebSocket local (`ws://127.0.0.1:17652`, solo loopback)
+- `electron-builder` para empaquetar un `.exe` portátil de Windows
 
 ## Estructura
 
@@ -52,9 +58,18 @@ o `npm run dev` desde la raíz para build + start en un paso.
 ### Probar cada vía de ingreso de texto
 
 1. **Portapapeles**: copiá texto (`Ctrl+C`) y apretá `Ctrl+Alt+R`
-2. **Drag&drop**: ícono de la bandeja → arrastrá un `.txt`/`.pdf`/`.docx`
+2. **Drag&drop**: ícono de la bandeja → arrastrá un `.txt`/`.pdf`/`.docx`/`.epub`
 3. **Extensión**: como se describe arriba
 4. **Pegado manual**: ícono de la bandeja → pegá texto → "Leer" o `Ctrl+Enter`
+
+### Empaquetar para distribución
+
+```bash
+cd packages/desktop
+npm run dist:win
+```
+
+Genera `packages/desktop/release/FlashRead <version>.exe` — un ejecutable portátil (sin instalador). Copialo a tu Escritorio o anclalo a la barra de tareas; no necesita Node ni la terminal para correr.
 
 ### Atajos dentro del lector
 

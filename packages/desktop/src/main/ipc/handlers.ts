@@ -3,6 +3,16 @@ import { getStore } from "../services/store";
 import { extractTextFromFile } from "../services/fileParserService";
 import { setGlobalShortcut } from "../services/shortcutManager";
 import {
+  getLibrary,
+  getLibraryItem,
+  addToLibrary,
+  removeFromLibrary,
+  getHistory,
+  getHistoryEntry,
+  removeHistoryEntry,
+  clearHistory,
+} from "../services/libraryStore";
+import {
   openReaderWithText,
   refreshReaderChunks,
   closeReaderWindow,
@@ -10,6 +20,12 @@ import {
   setReaderPanelVisible,
 } from "../windows/readerWindow";
 import { openSettingsWindow } from "../windows/settingsWindow";
+
+interface OpenReaderPayload {
+  text: string;
+  sourceLabel?: string;
+  saveToLibrary?: boolean;
+}
 
 export function registerIpcHandlers(): void {
   ipcMain.handle("settings:get", () => {
@@ -38,8 +54,12 @@ export function registerIpcHandlers(): void {
     return extractTextFromFile(filePath);
   });
 
-  ipcMain.on("paste:open-reader", (_e, text: string) => {
-    openReaderWithText(text, "paste");
+  ipcMain.on("paste:open-reader", (_e, payload: OpenReaderPayload) => {
+    let libraryItemId: string | undefined;
+    if (payload.saveToLibrary) {
+      libraryItemId = addToLibrary(payload.text, "paste", payload.sourceLabel).id;
+    }
+    openReaderWithText(payload.text, "paste", { sourceLabel: payload.sourceLabel, libraryItemId });
   });
 
   ipcMain.on("reader:update-wpm", (_e, wpm: number) => {
@@ -63,5 +83,44 @@ export function registerIpcHandlers(): void {
     const next = !store.get("showTextPanel");
     store.set("showTextPanel", next);
     setReaderPanelVisible(next);
+  });
+
+  ipcMain.handle("library:get", () => getLibrary());
+
+  ipcMain.on("library:remove", (_e, id: string) => {
+    removeFromLibrary(id);
+  });
+
+  ipcMain.on("library:open", (_e, id: string) => {
+    const item = getLibraryItem(id);
+    if (item) {
+      openReaderWithText(item.text, "library", { sourceLabel: item.sourceLabel, libraryItemId: item.id });
+    }
+  });
+
+  ipcMain.handle("history:get", () => getHistory());
+
+  ipcMain.on("history:clear", () => {
+    clearHistory();
+  });
+
+  ipcMain.on("history:remove", (_e, id: string) => {
+    removeHistoryEntry(id);
+  });
+
+  ipcMain.on("history:open", (_e, id: string) => {
+    const entry = getHistoryEntry(id);
+    if (entry) {
+      openReaderWithText(entry.text, "history", {
+        sourceLabel: entry.sourceLabel,
+        libraryItemId: entry.libraryItemId,
+      });
+    }
+  });
+
+  ipcMain.handle("history:add-to-library", (_e, id: string) => {
+    const entry = getHistoryEntry(id);
+    if (!entry) return null;
+    return addToLibrary(entry.text, entry.sourceType, entry.sourceLabel);
   });
 }

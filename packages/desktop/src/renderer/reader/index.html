@@ -44,7 +44,44 @@
         </div>
 
         <div id="text-panel">
-          <div id="text-panel-content"></div>
+          <div id="panel-tabs">
+            <button class="panel-tab-btn active" data-panel-tab="text">Texto</button>
+            <button class="panel-tab-btn" data-panel-tab="new">Nuevo</button>
+            <button class="panel-tab-btn" data-panel-tab="library">Biblioteca</button>
+            <button class="panel-tab-btn" data-panel-tab="history">Historial</button>
+          </div>
+
+          <div id="panel-tab-text" class="panel-tab-content active">
+            <div id="text-panel-content"></div>
+          </div>
+
+          <div id="panel-tab-new" class="panel-tab-content">
+            <div id="panel-dropzone">
+              <p id="panel-dropzone-label">Arrastrá un archivo .txt, .pdf, .docx o .epub, o pegá texto abajo</p>
+              <textarea id="panel-text-input" placeholder="Pegá o escribí el texto a leer…"></textarea>
+              <p id="panel-file-status"></p>
+              <div class="panel-actions">
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="panel-save-to-library" />
+                  Guardar
+                </label>
+                <button id="panel-btn-read">Leer</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="panel-tab-library" class="panel-tab-content">
+            <p id="panel-library-empty" class="empty-hint">Todavía no guardaste nada en tu biblioteca.</p>
+            <ul id="panel-library-list" class="item-list"></ul>
+          </div>
+
+          <div id="panel-tab-history" class="panel-tab-content">
+            <div class="list-header">
+              <button id="panel-btn-clear-history">Vaciar historial</button>
+            </div>
+            <p id="panel-history-empty" class="empty-hint">Todavía no leíste nada.</p>
+            <ul id="panel-history-list" class="item-list"></ul>
+          </div>
         </div>
       </div>
     </div>

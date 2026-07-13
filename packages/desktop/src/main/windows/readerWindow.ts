@@ -2,6 +2,7 @@ import { BrowserWindow, screen } from "electron";
 import path from "node:path";
 import { ReaderSettings, ParagraphRange, parseDocument, buildChunks, buildParagraphRanges } from "@flashread/core";
 import { getStore } from "../services/store";
+import { TextSource, addHistoryEntry } from "../services/libraryStore";
 
 const BASE_WIDTH = 720;
 const PANEL_WIDTH = 360;
@@ -79,8 +80,18 @@ function getOrCreateReaderWindow(settings: ReaderSettings): BrowserWindow {
   return readerWin;
 }
 
-export function openReaderWithText(text: string, _source: "clipboard" | "file" | "extension" | "paste"): void {
+export interface OpenReaderOptions {
+  sourceLabel?: string;
+  libraryItemId?: string;
+  /** Skip logging a history entry (used when the caller already logged one). */
+  skipHistory?: boolean;
+}
+
+export function openReaderWithText(text: string, source: TextSource, opts: OpenReaderOptions = {}): void {
   currentRawText = text;
+  if (!opts.skipHistory) {
+    addHistoryEntry(text, source, opts.sourceLabel, opts.libraryItemId);
+  }
   const settings = getStore().store;
   const win = getOrCreateReaderWindow(settings);
   const payload = buildPayload(text, settings);

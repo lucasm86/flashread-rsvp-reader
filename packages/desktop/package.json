@@ -13,6 +13,7 @@
   "dependencies": {
     "@flashread/core": "0.1.0",
     "electron-store": "^8.2.0",
+    "epub2": "^3.0.2",
     "mammoth": "^1.8.0",
     "pdf-parse": "^1.1.1",
     "ws": "^8.18.0"

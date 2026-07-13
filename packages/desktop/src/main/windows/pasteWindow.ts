@@ -11,8 +11,10 @@ export function openPasteWindow(): void {
   }
 
   pasteWin = new BrowserWindow({
-    width: 540,
-    height: 440,
+    width: 580,
+    height: 560,
+    minWidth: 420,
+    minHeight: 360,
     resizable: true,
     title: "FlashRead",
     webPreferences: {
