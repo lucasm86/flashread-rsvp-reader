@@ -157,8 +157,9 @@ body {
 
 #controls {
   position: absolute;
-  right: 10px;
+  left: 50%;
   bottom: 12px;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -173,7 +174,7 @@ body {
 #controls.hidden {
   opacity: 0;
   pointer-events: none;
-  transform: translateY(6px);
+  transform: translate(-50%, 6px);
 }
 
 #controls button,
@@ -218,8 +219,9 @@ body {
 
 #btn-show-controls {
   position: absolute;
-  right: 10px;
+  left: 50%;
   bottom: 12px;
+  transform: translateX(-50%);
   opacity: 0;
   pointer-events: none;
   background: rgba(0, 0, 0, 0.45);
