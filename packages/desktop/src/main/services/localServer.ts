@@ -1,4 +1,5 @@
 import { WebSocketServer } from "ws";
+import { extractTextFromBuffer } from "./fileParserService";
 
 export const LOCAL_SERVER_PORT = 17652;
 
@@ -22,15 +23,35 @@ export function startLocalServer(onText: (text: string) => void): WebSocketServe
     }
 
     socket.on("message", (data) => {
-      try {
-        const msg = JSON.parse(data.toString());
-        if (msg && msg.type === "read-text" && typeof msg.text === "string" && msg.text.trim()) {
-          onText(msg.text);
-          socket.send(JSON.stringify({ type: "ack" }));
+      void (async () => {
+        try {
+          const msg = JSON.parse(data.toString());
+
+          if (msg && msg.type === "read-text" && typeof msg.text === "string" && msg.text.trim()) {
+            onText(msg.text);
+            socket.send(JSON.stringify({ type: "ack" }));
+            return;
+          }
+
+          if (
+            msg &&
+            msg.type === "read-file" &&
+            typeof msg.dataBase64 === "string" &&
+            typeof msg.ext === "string"
+          ) {
+            const buffer = Buffer.from(msg.dataBase64, "base64");
+            const text = await extractTextFromBuffer(buffer, msg.ext);
+            if (text.trim()) {
+              onText(text);
+              socket.send(JSON.stringify({ type: "ack" }));
+            } else {
+              socket.send(JSON.stringify({ type: "error", message: "No se encontró texto en el archivo." }));
+            }
+          }
+        } catch (err) {
+          socket.send(JSON.stringify({ type: "error", message: (err as Error).message }));
         }
-      } catch {
-        // ignore malformed messages
-      }
+      })();
     });
   });
 

@@ -53,7 +53,9 @@ o `npm run dev` desde la raíz para build + start en un paso.
 1. `chrome://extensions` (o `edge://extensions`)
 2. Activar "Modo de desarrollador"
 3. "Cargar descomprimida" → seleccionar `packages/extension`
-4. Con la app corriendo, seleccionar texto en una página → clic derecho → "Leer con FlashRead"
+4. Con la app corriendo, clic derecho en una página:
+   - Con texto seleccionado → "Leer con FlashRead" (lee la selección)
+   - Sin seleccionar nada → "Leer página completa con FlashRead" (lee toda la página; si la pestaña es un PDF, lo descarga y extrae el texto igual que al arrastrarlo a la app)
 
 ### Probar cada vía de ingreso de texto
 

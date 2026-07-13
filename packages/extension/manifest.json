@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "FlashRead — Lector RSVP",
-  "version": "0.1.0",
-  "description": "Enviá el texto seleccionado a la app de escritorio FlashRead para leerlo en modo RSVP.",
-  "permissions": ["contextMenus", "notifications"],
+  "version": "0.2.0",
+  "description": "Enviá el texto seleccionado, la página completa o un PDF a la app de escritorio FlashRead para leerlo en modo RSVP.",
+  "permissions": ["contextMenus", "notifications", "activeTab", "scripting"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
