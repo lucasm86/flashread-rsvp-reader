@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+    <title>FlashRead</title>
+    <link rel="stylesheet" href="./paste.css" />
+  </head>
+  <body>
+    <div id="dropzone">
+      <p id="dropzone-label">Arrastrá un archivo .txt, .pdf o .docx acá, o pegá texto abajo</p>
+      <textarea id="text-input" placeholder="Pegá o escribí el texto a leer…"></textarea>
+      <p id="file-status"></p>
+      <div class="actions">
+        <button id="btn-read">Leer (Ctrl+Enter)</button>
+      </div>
+    </div>
+    <script src="./paste.js"></script>
+  </body>
+</html>

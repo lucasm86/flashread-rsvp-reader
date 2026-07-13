@@ -1,0 +1,80 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: "Segoe UI", sans-serif;
+  background: #1e1e1e;
+  color: #e5e5e5;
+}
+
+#dropzone {
+  height: 100%;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 2px dashed transparent;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+#dropzone.drag-over {
+  border-color: #3d5ae6;
+  background: rgba(61, 90, 230, 0.08);
+}
+
+#dropzone-label {
+  margin: 0;
+  font-size: 12px;
+  color: #9aa5ff;
+}
+
+#text-input {
+  flex: 1;
+  resize: none;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #e5e5e5;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+#file-status {
+  margin: 0;
+  min-height: 14px;
+  font-size: 11px;
+  color: #7fd67f;
+}
+
+#file-status.error {
+  color: #ff8080;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#btn-read {
+  background: #3d5ae6;
+  border: none;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#btn-read:hover {
+  background: #4a66ff;
+}
+
+#btn-read:disabled {
+  background: #555;
+  cursor: default;
+}

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+    <title>FlashRead — Configuración</title>
+    <link rel="stylesheet" href="./settings.css" />
+  </head>
+  <body>
+    <h1>Configuración</h1>
+    <form id="settings-form">
+      <fieldset>
+        <legend>Velocidad y lectura</legend>
+
+        <label
+          >Velocidad (WPM)
+          <input type="number" id="wpm" min="100" max="1000" step="25" />
+        </label>
+
+        <label
+          >Palabras por chunk
+          <select id="chunkSize">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </label>
+
+        <label class="checkbox">
+          <input type="checkbox" id="usePunctuationPauses" />
+          Pausas automáticas en puntuación
+        </label>
+
+        <label
+          >Pausa en fin de oración (x)
+          <input type="number" id="sentencePauseMultiplier" min="1" max="6" step="0.1" />
+        </label>
+
+        <label
+          >Pausa en coma (x)
+          <input type="number" id="commaPauseMultiplier" min="1" max="4" step="0.1" />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Apariencia</legend>
+
+        <label
+          >Tamaño de fuente (px)
+          <input type="number" id="fontSize" min="16" max="120" step="1" />
+        </label>
+
+        <label
+          >Tipografía
+          <input type="text" id="fontFamily" />
+        </label>
+
+        <label
+          >Color de texto
+          <input type="color" id="textColor" />
+        </label>
+
+        <label
+          >Color del punto ORP
+          <input type="color" id="orpColor" />
+        </label>
+
+        <label
+          >Color de fondo
+          <input type="color" id="backgroundColor" />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Comportamiento</legend>
+
+        <label class="checkbox">
+          <input type="checkbox" id="alwaysOnTop" />
+          Ventana del lector siempre visible (always on top)
+        </label>
+
+        <label class="checkbox">
+          <input type="checkbox" id="showTextPanel" />
+          Mostrar panel de texto completo al abrir el lector
+        </label>
+        <p class="hint">
+          El panel también se puede mostrar/ocultar desde el lector con el botón 📄 o la tecla
+          <code>T</code>.
+        </p>
+
+        <label
+          >Atajo global (portapapeles → lector)
+          <input type="text" id="globalShortcut" placeholder="CommandOrControl+Alt+R" />
+        </label>
+        <p class="hint">
+          Formato Electron Accelerator, ej. <code>CommandOrControl+Alt+R</code>. Si el atajo ya
+          está en uso por otra app, no se aplicará.
+        </p>
+      </fieldset>
+
+      <div class="actions">
+        <span id="save-status"></span>
+        <button type="submit">Guardar</button>
+      </div>
+    </form>
+    <script src="./settings.js"></script>
+  </body>
+</html>

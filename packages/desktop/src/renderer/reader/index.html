@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+    <title>FlashRead</title>
+    <link rel="stylesheet" href="./reader.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="layout">
+        <div id="reader-main">
+          <div id="word-stage">
+            <div id="orp-guide-top"></div>
+            <div id="word-display">
+              <span id="word-pre"></span><span id="word-orp"></span><span id="word-post"></span>
+            </div>
+            <div id="orp-guide-bottom"></div>
+          </div>
+
+          <div id="progress-bar"><div id="progress-fill"></div></div>
+        </div>
+
+        <div id="text-panel">
+          <div id="text-panel-content"></div>
+        </div>
+      </div>
+
+      <div id="controls" class="visible">
+        <button id="btn-prev" title="Anterior (←)">⏮</button>
+        <button id="btn-play" title="Reproducir / Pausar (Espacio)">▶</button>
+        <button id="btn-next" title="Siguiente (→)">⏭</button>
+        <div id="wpm-control">
+          <button id="btn-wpm-down" title="Bajar velocidad (↓)">−</button>
+          <span id="wpm-value">300</span><span class="wpm-label">wpm</span>
+          <button id="btn-wpm-up" title="Subir velocidad (↑)">+</button>
+        </div>
+        <button id="btn-toggle-panel" title="Mostrar/ocultar texto completo (T)">📄</button>
+        <button id="btn-settings" title="Configuración">⚙</button>
+        <button id="btn-toggle-controls" title="Ocultar controles">▾</button>
+      </div>
+      <button id="btn-show-controls" title="Mostrar controles">▴</button>
+    </div>
+    <script src="./reader.js"></script>
+  </body>
+</html>

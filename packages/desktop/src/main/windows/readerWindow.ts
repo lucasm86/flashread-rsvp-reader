@@ -1,0 +1,117 @@
+import { BrowserWindow } from "electron";
+import path from "node:path";
+import { ReaderSettings, ParagraphRange, parseDocument, buildChunks, buildParagraphRanges } from "@flashread/core";
+import { getStore } from "../services/store";
+
+const BASE_WIDTH = 720;
+const PANEL_WIDTH = 360;
+const BASE_HEIGHT = 260;
+const MIN_WIDTH = 420;
+const MIN_HEIGHT = 180;
+
+let readerWin: BrowserWindow | null = null;
+let currentRawText: string | null = null;
+
+interface ChunkPayload {
+  chunks: {
+    display: string;
+    orpIndex: number;
+    pauseMultiplier: number;
+    wordCount: number;
+    paragraphIndex: number;
+  }[];
+  paragraphs: ParagraphRange[];
+  settings: ReaderSettings;
+}
+
+function windowWidthFor(showTextPanel: boolean): number {
+  return showTextPanel ? BASE_WIDTH + PANEL_WIDTH : BASE_WIDTH;
+}
+
+function buildPayload(text: string, settings: ReaderSettings): ChunkPayload {
+  const tokens = parseDocument(text);
+  const chunks = buildChunks(tokens, settings.chunkSize, settings);
+  const paragraphs = buildParagraphRanges(chunks);
+  return {
+    chunks: chunks.map((c) => ({
+      display: c.display,
+      orpIndex: c.orpIndex,
+      pauseMultiplier: c.pauseMultiplier,
+      wordCount: c.words.length,
+      paragraphIndex: c.paragraphIndex,
+    })),
+    paragraphs,
+    settings,
+  };
+}
+
+function getOrCreateReaderWindow(settings: ReaderSettings): BrowserWindow {
+  if (readerWin && !readerWin.isDestroyed()) {
+    readerWin.setAlwaysOnTop(settings.alwaysOnTop);
+    return readerWin;
+  }
+
+  readerWin = new BrowserWindow({
+    width: windowWidthFor(settings.showTextPanel),
+    height: BASE_HEIGHT,
+    minWidth: MIN_WIDTH,
+    minHeight: MIN_HEIGHT,
+    frame: false,
+    resizable: true,
+    alwaysOnTop: settings.alwaysOnTop,
+    center: true,
+    show: false,
+    backgroundColor: "#1e1e1e",
+    webPreferences: {
+      preload: path.join(__dirname, "../../preload/readerPreload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  readerWin.once("ready-to-show", () => readerWin?.show());
+  readerWin.on("closed", () => {
+    readerWin = null;
+  });
+
+  readerWin.loadFile(path.join(__dirname, "../../renderer/reader/index.html"));
+
+  return readerWin;
+}
+
+export function openReaderWithText(text: string, _source: "clipboard" | "file" | "extension" | "paste"): void {
+  currentRawText = text;
+  const settings = getStore().store;
+  const win = getOrCreateReaderWindow(settings);
+  const payload = buildPayload(text, settings);
+
+  const send = () => win.webContents.send("reader:load-text", payload);
+  if (win.webContents.isLoading()) {
+    win.webContents.once("did-finish-load", send);
+  } else {
+    send();
+  }
+
+  win.show();
+  win.focus();
+}
+
+export function refreshReaderChunks(settings: ReaderSettings): void {
+  if (!readerWin || readerWin.isDestroyed() || !currentRawText) return;
+  readerWin.setAlwaysOnTop(settings.alwaysOnTop);
+  const payload = buildPayload(currentRawText, settings);
+  readerWin.webContents.send("reader:settings-updated", payload);
+}
+
+export function setReaderPanelVisible(showTextPanel: boolean): void {
+  if (!readerWin || readerWin.isDestroyed()) return;
+  const [, height] = readerWin.getSize();
+  readerWin.setSize(windowWidthFor(showTextPanel), height);
+  readerWin.webContents.send("reader:panel-visibility", { showTextPanel });
+}
+
+export function closeReaderWindow(): void {
+  if (readerWin && !readerWin.isDestroyed()) {
+    readerWin.hide();
+  }
+}

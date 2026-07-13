@@ -1,0 +1,23 @@
+{
+  "name": "@flashread/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.js",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@flashread/core": "0.1.0",
+    "electron-store": "^8.2.0",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "@types/ws": "^8.5.12",
+    "electron": "^33.0.0",
+    "typescript": "^5.6.0"
+  }
+}
