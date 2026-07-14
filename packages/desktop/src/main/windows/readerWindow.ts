@@ -9,7 +9,12 @@ import {
   buildMarkdownChunks,
 } from "@flashread/core";
 import { getStore } from "../services/store";
-import { TextSource, addHistoryEntry } from "../services/libraryStore";
+import {
+  TextSource,
+  addHistoryEntry,
+  updateLibraryItemPosition,
+  updateHistoryEntryPosition,
+} from "../services/libraryStore";
 
 const BASE_WIDTH = 720;
 const PANEL_WIDTH = 360;
@@ -20,6 +25,8 @@ const MIN_HEIGHT = 180;
 let readerWin: BrowserWindow | null = null;
 let currentRawText: string | null = null;
 let currentIsMarkdown = false;
+let currentLibraryItemId: string | undefined;
+let currentHistoryEntryId: string | undefined;
 
 interface ChunkPayload {
   chunks: {
@@ -34,13 +41,20 @@ interface ChunkPayload {
   paragraphs: ParagraphRange[];
   settings: ReaderSettings;
   notice?: string;
+  resumeIndex?: number;
 }
 
 function windowWidthFor(showTextPanel: boolean): number {
   return showTextPanel ? BASE_WIDTH + PANEL_WIDTH : BASE_WIDTH;
 }
 
-function buildPayload(text: string, settings: ReaderSettings, isMarkdown: boolean, notice?: string): ChunkPayload {
+function buildPayload(
+  text: string,
+  settings: ReaderSettings,
+  isMarkdown: boolean,
+  notice?: string,
+  resumeIndex?: number
+): ChunkPayload {
   const chunks = isMarkdown
     ? buildMarkdownChunks(text, settings.chunkSize, settings)
     : buildChunks(parseDocument(text), settings.chunkSize, settings);
@@ -58,6 +72,7 @@ function buildPayload(text: string, settings: ReaderSettings, isMarkdown: boolea
     paragraphs,
     settings,
     notice,
+    resumeIndex,
   };
 }
 
@@ -104,17 +119,20 @@ export interface OpenReaderOptions {
   isMarkdown?: boolean;
   /** Discreet, non-blocking message shown once in the reader (e.g. Markdown-conversion fallback notice). */
   notice?: string;
+  /** Chunk index to resume from (e.g. reopening a Library/History entry that was partially read). */
+  resumeAt?: number;
 }
 
 export function openReaderWithText(text: string, source: TextSource, opts: OpenReaderOptions = {}): void {
   currentRawText = text;
   currentIsMarkdown = !!opts.isMarkdown;
-  if (!opts.skipHistory) {
-    addHistoryEntry(text, source, opts.sourceLabel, opts.libraryItemId, opts.isMarkdown);
-  }
+  currentLibraryItemId = opts.libraryItemId;
+  currentHistoryEntryId = opts.skipHistory
+    ? undefined
+    : addHistoryEntry(text, source, opts.sourceLabel, opts.libraryItemId, opts.isMarkdown).id;
   const settings = getStore().store;
   const win = getOrCreateReaderWindow(settings);
-  const payload = buildPayload(text, settings, currentIsMarkdown, opts.notice);
+  const payload = buildPayload(text, settings, currentIsMarkdown, opts.notice, opts.resumeAt);
 
   const send = () => win.webContents.send("reader:load-text", payload);
   if (win.webContents.isLoading()) {
@@ -217,4 +235,10 @@ export function minimizeReaderWindow(): void {
   if (readerWin && !readerWin.isDestroyed()) {
     readerWin.minimize();
   }
+}
+
+/** Persists the current chunk index onto whichever Library item and/or History entry back the text currently loaded. */
+export function savePlaybackPosition(chunkIndex: number): void {
+  if (currentLibraryItemId) updateLibraryItemPosition(currentLibraryItemId, chunkIndex);
+  if (currentHistoryEntryId) updateHistoryEntryPosition(currentHistoryEntryId, chunkIndex);
 }

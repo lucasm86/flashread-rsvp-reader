@@ -12,6 +12,8 @@ export interface LibraryItem {
   addedAt: number;
   /** True when `text` is Markdown (from the document-to-Markdown conversion), not plain text. */
   isMarkdown?: boolean;
+  /** Last chunk index reached while reading, so reopening can resume instead of starting over. */
+  lastChunkIndex?: number;
 }
 
 export interface HistoryEntry {
@@ -24,6 +26,8 @@ export interface HistoryEntry {
   readAt: number;
   /** True when `text` is Markdown (from the document-to-Markdown conversion), not plain text. */
   isMarkdown?: boolean;
+  /** Last chunk index reached while reading, so reopening can resume instead of starting over. */
+  lastChunkIndex?: number;
 }
 
 interface LibrarySchema {
@@ -136,4 +140,20 @@ export function removeHistoryEntry(id: string): void {
 
 export function clearHistory(): void {
   getStore().set("history", []);
+}
+
+export function updateLibraryItemPosition(id: string, chunkIndex: number): void {
+  const s = getStore();
+  s.set(
+    "items",
+    s.get("items").map((i) => (i.id === id ? { ...i, lastChunkIndex: chunkIndex } : i))
+  );
+}
+
+export function updateHistoryEntryPosition(id: string, chunkIndex: number): void {
+  const s = getStore();
+  s.set(
+    "history",
+    s.get("history").map((h) => (h.id === id ? { ...h, lastChunkIndex: chunkIndex } : h))
+  );
 }

@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld("flashread", {
   openSettings: () => ipcRenderer.send("reader:open-settings"),
   closeReader: () => ipcRenderer.send("reader:close"),
   minimizeReader: () => ipcRenderer.send("reader:minimize"),
+  savePosition: (chunkIndex: number) => ipcRenderer.send("reader:save-position", chunkIndex),
 
   loadNewText: (text: string, sourceLabel?: string, saveToLibrary?: boolean, isMarkdown?: boolean) =>
     ipcRenderer.send("paste:open-reader", { text, sourceLabel, saveToLibrary, isMarkdown }),

@@ -25,6 +25,7 @@ import {
   closeReaderWindow,
   minimizeReaderWindow,
   setReaderPanelVisible,
+  savePlaybackPosition,
 } from "../windows/readerWindow";
 import { openSettingsWindow } from "../windows/settingsWindow";
 
@@ -96,6 +97,10 @@ export function registerIpcHandlers(): void {
     minimizeReaderWindow();
   });
 
+  ipcMain.on("reader:save-position", (_e, chunkIndex: number) => {
+    savePlaybackPosition(chunkIndex);
+  });
+
   ipcMain.on("reader:toggle-panel", () => {
     const store = getStore();
     const next = !store.get("showTextPanel");
@@ -116,6 +121,7 @@ export function registerIpcHandlers(): void {
         sourceLabel: item.sourceLabel,
         libraryItemId: item.id,
         isMarkdown: item.isMarkdown,
+        resumeAt: item.lastChunkIndex,
       });
     }
   });
@@ -137,6 +143,7 @@ export function registerIpcHandlers(): void {
         sourceLabel: entry.sourceLabel,
         libraryItemId: entry.libraryItemId,
         isMarkdown: entry.isMarkdown,
+        resumeAt: entry.lastChunkIndex,
       });
     }
   });

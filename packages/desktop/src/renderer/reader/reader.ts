@@ -29,6 +29,7 @@ interface LoadPayload {
   paragraphs: ParagraphRange[];
   settings: ReaderSettingsLike;
   notice?: string;
+  resumeIndex?: number;
 }
 
 interface LibraryItem {
@@ -61,6 +62,7 @@ interface FlashReadReaderAPI {
   openSettings: () => void;
   closeReader: () => void;
   minimizeReader: () => void;
+  savePosition: (chunkIndex: number) => void;
 
   loadNewText: (text: string, sourceLabel?: string, saveToLibrary?: boolean, isMarkdown?: boolean) => void;
   extractFileText: (filePath: string) => Promise<{ text: string; isMarkdown: boolean; notice?: string }>;
@@ -582,9 +584,17 @@ interface Window {
     clearTimer();
   }
 
+  function saveCurrentPosition(): void {
+    window.flashread.savePosition(index);
+  }
+
   function toggle(): void {
-    if (playing) pause();
-    else play();
+    if (playing) {
+      pause();
+      saveCurrentPosition();
+    } else {
+      play();
+    }
   }
 
   function next(): void {
@@ -618,7 +628,10 @@ interface Window {
     chunks = payload.chunks;
     paragraphs = payload.paragraphs;
     settings = payload.settings;
-    if (resetPosition || index >= chunks.length) index = 0;
+    if (resetPosition || index >= chunks.length) {
+      const resumeIndex = payload.resumeIndex;
+      index = resumeIndex && resumeIndex > 0 && resumeIndex < chunks.length ? resumeIndex : 0;
+    }
     applyStyles();
     applyPanelVisibility(settings.showTextPanel);
     buildPanel();
@@ -626,7 +639,13 @@ interface Window {
     renderChunk();
     if (resetPosition) switchPanelTab("text");
     if (resetPosition || wasPlaying) play();
-    if (resetPosition && payload.notice) showToast(payload.notice);
+    if (resetPosition) {
+      if (payload.notice) {
+        showToast(payload.notice);
+      } else if (index > 0) {
+        showToast(`Retomando desde la palabra ${index + 1} de ${chunks.length}.`);
+      }
+    }
   }
 
   window.flashread.onLoadText((payload) => loadPayload(payload, true));
@@ -655,7 +674,14 @@ interface Window {
   document.getElementById("btn-settings")!.addEventListener("click", () => window.flashread.openSettings());
   btnTogglePanel.addEventListener("click", () => window.flashread.togglePanel());
   document.getElementById("btn-window-minimize")!.addEventListener("click", () => window.flashread.minimizeReader());
-  document.getElementById("btn-window-close")!.addEventListener("click", () => window.flashread.closeReader());
+  document.getElementById("btn-window-close")!.addEventListener("click", () => {
+    saveCurrentPosition();
+    window.flashread.closeReader();
+  });
+
+  window.setInterval(() => {
+    if (playing) saveCurrentPosition();
+  }, 5000);
 
   document.getElementById("btn-toggle-controls")!.addEventListener("click", () => {
     controls.classList.add("hidden");
@@ -694,6 +720,7 @@ interface Window {
         window.flashread.togglePanel();
         break;
       case "Escape":
+        saveCurrentPosition();
         window.flashread.closeReader();
         break;
     }
