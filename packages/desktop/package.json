@@ -55,7 +55,8 @@
     "publish": {
       "provider": "github",
       "owner": "lucasm86",
-      "repo": "flashread-rsvp-reader"
+      "repo": "flashread-rsvp-reader",
+      "releaseType": "release"
     }
   }
 }
