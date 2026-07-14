@@ -25,7 +25,11 @@ jobs:
         run: npm run build
 
       - name: Package Windows artifacts
-        run: npm run dist:win
+        # electron-builder auto-publishes when it detects CI=true (set by GitHub
+        # Actions) if a `publish` config exists, which it does now (for
+        # electron-updater). This workflow only verifies the build compiles from
+        # source — it must never publish, so override explicitly.
+        run: npm run dist:win -- --publish never
         working-directory: packages/desktop
 
       - name: Upload build artifacts
