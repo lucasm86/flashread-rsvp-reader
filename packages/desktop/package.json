@@ -4,6 +4,7 @@
   "private": true,
   "description": "Lector RSVP para Windows",
   "author": "lucasm86",
+  "license": "MIT",
   "main": "dist/main/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/copy-assets.js",

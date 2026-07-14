@@ -102,4 +102,4 @@ La barra de controles también tiene botones ⏪/⏩ para saltar de párrafo, un
 
 ## Licencia
 
-Sin definir todavía.
+[MIT](LICENSE).
