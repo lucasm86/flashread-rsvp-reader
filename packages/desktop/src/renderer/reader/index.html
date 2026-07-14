@@ -51,6 +51,7 @@
             <button class="panel-tab-btn" data-panel-tab="new">Nuevo</button>
             <button class="panel-tab-btn" data-panel-tab="library">Biblioteca</button>
             <button class="panel-tab-btn" data-panel-tab="history">Historial</button>
+            <button class="panel-tab-btn" data-panel-tab="stats">Estadísticas</button>
           </div>
 
           <div id="panel-tab-text" class="panel-tab-content active">
@@ -87,6 +88,29 @@
             </div>
             <p id="panel-history-empty" class="empty-hint">Todavía no leíste nada.</p>
             <ul id="panel-history-list" class="item-list"></ul>
+          </div>
+
+          <div id="panel-tab-stats" class="panel-tab-content">
+            <div id="stats-summary">
+              <div class="stats-tile">
+                <span id="stats-total-words" class="stats-value">0</span>
+                <span class="stats-label">palabras leídas</span>
+              </div>
+              <div class="stats-tile">
+                <span id="stats-total-sessions" class="stats-value">0</span>
+                <span class="stats-label">sesiones</span>
+              </div>
+              <div class="stats-tile">
+                <span id="stats-total-time" class="stats-value">0h 0m</span>
+                <span class="stats-label">tiempo leído</span>
+              </div>
+              <div class="stats-tile">
+                <span id="stats-avg-wpm" class="stats-value">0</span>
+                <span class="stats-label">wpm promedio</span>
+              </div>
+            </div>
+            <p id="stats-empty" class="empty-hint">Todavía no hay sesiones registradas.</p>
+            <ul id="stats-sessions-list" class="item-list"></ul>
           </div>
         </div>
       </div>

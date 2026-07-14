@@ -51,6 +51,21 @@ interface HistoryEntry {
   readAt: number;
 }
 
+interface StatsSession {
+  id: string;
+  wordsRead: number;
+  durationMs: number;
+  wpmAvg: number;
+  endedAt: number;
+}
+
+interface StatsSummary {
+  totalWordsRead: number;
+  totalSessions: number;
+  totalDurationMs: number;
+  recentSessions: StatsSession[];
+}
+
 interface FlashReadReaderAPI {
   onLoadText: (cb: (payload: LoadPayload) => void) => void;
   onSettingsUpdated: (cb: (payload: LoadPayload) => void) => void;
@@ -63,6 +78,8 @@ interface FlashReadReaderAPI {
   closeReader: () => void;
   minimizeReader: () => void;
   savePosition: (chunkIndex: number) => void;
+  recordSession: (wordsRead: number, durationMs: number) => void;
+  getStats: () => Promise<StatsSummary>;
 
   loadNewText: (text: string, sourceLabel?: string, saveToLibrary?: boolean, isMarkdown?: boolean) => void;
   extractFileText: (filePath: string) => Promise<{ text: string; isMarkdown: boolean; notice?: string }>;
@@ -105,6 +122,7 @@ interface Window {
     new: document.getElementById("panel-tab-new")!,
     library: document.getElementById("panel-tab-library")!,
     history: document.getElementById("panel-tab-history")!,
+    stats: document.getElementById("panel-tab-stats")!,
   };
   const panelDropzone = document.getElementById("panel-dropzone") as HTMLDivElement;
   const panelUrlInput = document.getElementById("panel-url-input") as HTMLInputElement;
@@ -118,6 +136,12 @@ interface Window {
   const panelHistoryList = document.getElementById("panel-history-list") as HTMLUListElement;
   const panelHistoryEmpty = document.getElementById("panel-history-empty") as HTMLParagraphElement;
   const panelBtnClearHistory = document.getElementById("panel-btn-clear-history") as HTMLButtonElement;
+  const statsTotalWords = document.getElementById("stats-total-words") as HTMLSpanElement;
+  const statsTotalSessions = document.getElementById("stats-total-sessions") as HTMLSpanElement;
+  const statsTotalTime = document.getElementById("stats-total-time") as HTMLSpanElement;
+  const statsAvgWpm = document.getElementById("stats-avg-wpm") as HTMLSpanElement;
+  const statsSessionsList = document.getElementById("stats-sessions-list") as HTMLUListElement;
+  const statsEmpty = document.getElementById("stats-empty") as HTMLParagraphElement;
 
   let chunks: ChunkData[] = [];
   let paragraphs: ParagraphRange[] = [];
@@ -138,6 +162,9 @@ interface Window {
   let timer: number | null = null;
   let remainingMsSuffix: number[] = [];
   let toastTimer: number | null = null;
+  let sessionWordsRead = 0;
+  let sessionPlayMs = 0;
+  let playSegmentStart: number | null = null;
 
   function applyStyles(): void {
     const root = document.documentElement.style;
@@ -234,6 +261,7 @@ interface Window {
     Object.entries(panelTabContents).forEach(([key, el]) => el.classList.toggle("active", key === name));
     if (name === "library") void refreshPanelLibrary();
     if (name === "history") void refreshPanelHistory();
+    if (name === "stats") void refreshPanelStats();
   }
 
   panelTabButtons.forEach((btn) => {
@@ -464,6 +492,34 @@ interface Window {
     void refreshPanelHistory();
   });
 
+  function formatDuration(ms: number): string {
+    const totalMinutes = Math.round(ms / 60000);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return `${h}h ${m}m`;
+  }
+
+  async function refreshPanelStats(): Promise<void> {
+    const summary = await window.flashread.getStats();
+    statsTotalWords.textContent = summary.totalWordsRead.toLocaleString();
+    statsTotalSessions.textContent = String(summary.totalSessions);
+    statsTotalTime.textContent = formatDuration(summary.totalDurationMs);
+    const avgWpm =
+      summary.totalDurationMs > 0 ? Math.round(summary.totalWordsRead / (summary.totalDurationMs / 60000)) : 0;
+    statsAvgWpm.textContent = String(avgWpm);
+
+    statsSessionsList.innerHTML = "";
+    statsEmpty.style.display = summary.recentSessions.length === 0 ? "block" : "none";
+    for (const session of summary.recentSessions) {
+      const row = buildItemRow(
+        `${session.wordsRead.toLocaleString()} palabras`,
+        `${formatDate(session.endedAt)} · ${session.wpmAvg} wpm · ${formatDuration(session.durationMs)}`,
+        []
+      );
+      statsSessionsList.appendChild(row);
+    }
+  }
+
   function jumpToChunk(target: number): void {
     if (chunks.length === 0) return;
     index = Math.max(0, Math.min(target, chunks.length - 1));
@@ -559,6 +615,7 @@ interface Window {
     timer = window.setTimeout(() => {
       if (index < chunks.length - 1) {
         index++;
+        sessionWordsRead += chunks[index]?.wordCount ?? 0;
         renderChunk();
         scheduleNext();
       } else {
@@ -573,6 +630,7 @@ interface Window {
     // Resuming on a table pause point: step past it instead of "playing" it.
     if (chunks[index]?.type === "table" && index < chunks.length - 1) index++;
     playing = true;
+    playSegmentStart = Date.now();
     btnPlay.textContent = "⏸";
     renderChunk();
     scheduleNext();
@@ -580,12 +638,29 @@ interface Window {
 
   function pause(): void {
     playing = false;
+    if (playSegmentStart !== null) {
+      sessionPlayMs += Date.now() - playSegmentStart;
+      playSegmentStart = null;
+    }
     btnPlay.textContent = "▶";
     clearTimer();
   }
 
   function saveCurrentPosition(): void {
     window.flashread.savePosition(index);
+  }
+
+  /** Flushes the accumulated reading session (since the current text was loaded) to the stats store. */
+  function flushSession(): void {
+    if (playSegmentStart !== null) {
+      sessionPlayMs += Date.now() - playSegmentStart;
+      playSegmentStart = Date.now();
+    }
+    if (sessionWordsRead > 0 && sessionPlayMs > 0) {
+      window.flashread.recordSession(sessionWordsRead, Math.round(sessionPlayMs));
+    }
+    sessionWordsRead = 0;
+    sessionPlayMs = 0;
   }
 
   function toggle(): void {
@@ -625,6 +700,7 @@ interface Window {
   function loadPayload(payload: LoadPayload, resetPosition: boolean): void {
     const wasPlaying = playing;
     pause();
+    if (resetPosition) flushSession();
     chunks = payload.chunks;
     paragraphs = payload.paragraphs;
     settings = payload.settings;
@@ -655,6 +731,7 @@ interface Window {
     const active = panelTabButtons.find((btn) => btn.classList.contains("active"));
     if (active?.dataset.panelTab === "library") void refreshPanelLibrary();
     if (active?.dataset.panelTab === "history") void refreshPanelHistory();
+    if (active?.dataset.panelTab === "stats") void refreshPanelStats();
   });
   window.flashread.onPanelVisibility(({ showTextPanel }) => applyPanelVisibility(showTextPanel));
   window.flashread.onFocusNewTab(() => {
@@ -676,6 +753,7 @@ interface Window {
   document.getElementById("btn-window-minimize")!.addEventListener("click", () => window.flashread.minimizeReader());
   document.getElementById("btn-window-close")!.addEventListener("click", () => {
     saveCurrentPosition();
+    flushSession();
     window.flashread.closeReader();
   });
 
@@ -721,6 +799,7 @@ interface Window {
         break;
       case "Escape":
         saveCurrentPosition();
+        flushSession();
         window.flashread.closeReader();
         break;
     }

@@ -9,6 +9,7 @@ import {
   getFileAssociationState,
 } from "../services/fileAssociations";
 import { checkForUpdatesManual, getAppVersion } from "../services/updater";
+import { recordSession, getStatsSummary } from "../services/statsStore";
 import {
   getLibrary,
   getLibraryItem,
@@ -100,6 +101,12 @@ export function registerIpcHandlers(): void {
   ipcMain.on("reader:save-position", (_e, chunkIndex: number) => {
     savePlaybackPosition(chunkIndex);
   });
+
+  ipcMain.on("reader:record-session", (_e, wordsRead: number, durationMs: number) => {
+    recordSession(wordsRead, durationMs);
+  });
+
+  ipcMain.handle("stats:get", () => getStatsSummary());
 
   ipcMain.on("reader:toggle-panel", () => {
     const store = getStore();
