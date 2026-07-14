@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld("flashread", {
   onFocusNewTab: (cb: () => void) => {
     ipcRenderer.on("reader:focus-new-tab", () => cb());
   },
+  onShowToast: (cb: (message: string) => void) => {
+    ipcRenderer.on("reader:show-toast", (_e, message) => cb(message));
+  },
   updateWpm: (wpm: number) => ipcRenderer.send("reader:update-wpm", wpm),
   togglePanel: () => ipcRenderer.send("reader:toggle-panel"),
   openSettings: () => ipcRenderer.send("reader:open-settings"),

@@ -3,6 +3,11 @@ import { getStore } from "../services/store";
 import { extractTextFromFile } from "../services/fileParserService";
 import { setGlobalShortcut } from "../services/shortcutManager";
 import {
+  registerFileAssociations,
+  unregisterFileAssociations,
+  getFileAssociationState,
+} from "../services/fileAssociations";
+import {
   getLibrary,
   getLibraryItem,
   addToLibrary,
@@ -133,5 +138,17 @@ export function registerIpcHandlers(): void {
     const entry = getHistoryEntry(id);
     if (!entry) return null;
     return addToLibrary(entry.text, entry.sourceType, entry.sourceLabel, entry.isMarkdown);
+  });
+
+  ipcMain.handle("fileAssoc:status", () => getFileAssociationState());
+
+  ipcMain.handle("fileAssoc:register", async () => {
+    await registerFileAssociations();
+    return getFileAssociationState();
+  });
+
+  ipcMain.handle("fileAssoc:unregister", async () => {
+    await unregisterFileAssociations();
+    return getFileAssociationState();
   });
 }

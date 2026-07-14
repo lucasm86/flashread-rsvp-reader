@@ -87,6 +87,25 @@
       </fieldset>
 
       <fieldset>
+        <legend>Integración con Windows</legend>
+
+        <p class="hint">
+          Registra FlashRead como opción de "Abrir con" y agrega "Leer con FlashRead" al menú
+          contextual de Explorador para <code>.txt</code>, <code>.pdf</code>, <code>.docx</code> y
+          <code>.epub</code>. No cambia el programa predeterminado de ningún tipo de archivo. El
+          registro apunta al <code>.exe</code> actual: si movés o reemplazás la app, volvé a
+          registrar.
+        </p>
+        <p id="fileAssocStatus" class="hint"></p>
+        <div class="actions" style="justify-content: flex-start">
+          <button type="button" id="fileAssocRegisterBtn" class="btn">Registrar</button>
+          <button type="button" id="fileAssocUnregisterBtn" class="btn btn-secondary">
+            Quitar registro
+          </button>
+        </div>
+      </fieldset>
+
+      <fieldset>
         <legend>Comportamiento</legend>
 
         <label class="checkbox">

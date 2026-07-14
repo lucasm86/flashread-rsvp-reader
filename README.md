@@ -14,11 +14,12 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
   - **Historial**: registro cronológico de todo lo leído, esté o no guardado en la biblioteca (podés promoverlo a biblioteca desde ahí con un clic).
 
   No hay una ventana de "pegar texto" separada: el ícono de la bandeja abre directamente el lector con el panel lateral en la pestaña "Nuevo", y desde Biblioteca/Historial "Leer" pasa directo a la lectura mostrando el avance en el panel.
-- **Cuatro vías para llevar texto al lector**:
+- **Cinco vías para llevar texto al lector**:
   - Atajo global de portapapeles (`Ctrl+Alt+R` configurable)
   - Arrastrar y soltar archivos `.txt`, `.pdf`, `.docx`, `.epub` (sobre el panel "Nuevo" del lector)
   - Extensión de navegador (Chrome/Edge, Manifest V3) vía menú contextual
   - Pegado manual en la pestaña "Nuevo" del propio lector
+  - **"Abrir con FlashRead"** o **"Leer con FlashRead"** desde el menú contextual del Explorador de Windows, para `.txt`/`.pdf`/`.docx`/`.epub` (una vez registrado desde Configuración → "Integración con Windows")
 - **App de bandeja del sistema**, instancia única, configuración persistente local (sin backend, 100% offline).
 - **Empaquetado como `.exe` portátil** (sin instalador) vía `electron-builder` — ver [Empaquetar para distribución](#empaquetar-para-distribución).
 - **Conversión opcional a Markdown** (toggle en Configuración → "Convertir documentos a Markdown antes de leer"): para `.docx` y páginas web leídas con la extensión, preserva encabezados, listas y tablas del documento original.
@@ -26,6 +27,10 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
   - Las tablas no se leen palabra por palabra: la reproducción se pausa automáticamente y la tabla se muestra completa en el panel lateral; se retoma manualmente.
   - No afecta a `.pdf` ni `.txt` — se probó contra la librería oficial de Python (`markitdown`) y ningún conversor logra reconstruir estructura confiable a partir de un PDF, así que esos formatos siguen con extracción de texto plano.
   - Si la conversión falla, cae automáticamente a texto plano y avisa con un mensaje discreto (no bloqueante) en el panel o en el lector.
+- **Integración con el Explorador de Windows** (toggle en Configuración → "Integración con Windows", botones "Registrar"/"Quitar registro"): agrega FlashRead a la lista de "Abrir con" y una entrada de menú contextual "Leer con FlashRead" para `.txt`/`.pdf`/`.docx`/`.epub`.
+  - Registro por usuario (claves en `HKEY_CURRENT_USER`), sin pedir permisos de administrador y sin cambiar el programa predeterminado de ningún tipo de archivo.
+  - Solo disponible en la versión empaquetada (`.exe`); el botón queda deshabilitado en modo desarrollo. El registro apunta al `.exe` actual, así que si movés o reemplazás el archivo hay que volver a registrar (la Configuración detecta y avisa si el registro quedó "stale").
+  - Al abrir un archivo así (o con la app ya abierta, al abrir un segundo archivo) se aplica la misma extracción de texto y el mismo toggle de conversión a Markdown que el resto de las vías; queda igual registrado en el Historial.
 
 ## Stack
 
@@ -71,6 +76,7 @@ o `npm run dev` desde la raíz para build + start en un paso.
 2. **Drag&drop**: ícono de la bandeja (abre el lector en la pestaña "Nuevo") → arrastrá un `.txt`/`.pdf`/`.docx`/`.epub` sobre el panel
 3. **Extensión**: como se describe arriba
 4. **Pegado manual**: ícono de la bandeja → pegá texto en la pestaña "Nuevo" → "Leer" o `Ctrl+Enter`
+5. **Abrir con / menú contextual**: solo con el `.exe` empaquetado — Configuración → "Integración con Windows" → "Registrar", después clic derecho sobre un archivo soportado → "Leer con FlashRead" (o "Abrir con" → FlashRead)
 
 ### Empaquetar para distribución
 
@@ -96,10 +102,6 @@ La barra de controles también tiene botones ⏪/⏩ para saltar de párrafo, un
 
 ## Fase 2 (pendiente)
 
-Arquitectura preparada pero no implementada:
-
-- Registro como "Abrir con" en Explorador de Windows para `.pdf`/`.docx`/`.txt`
-- Entrada directa en el menú contextual de Windows Explorer
 - Evaluar un add-in nativo de Word (Office JS)
 
 ## Licencia

@@ -127,6 +127,31 @@ export function openReaderWithText(text: string, source: TextSource, opts: OpenR
   win.focus();
 }
 
+/** Opens the reader on the "Nuevo" tab and surfaces a one-off error toast (e.g. a failed file-association open). */
+export function openReaderWithError(message: string): void {
+  const store = getStore();
+  const settings = store.store;
+  const win = getOrCreateReaderWindow(settings);
+
+  const activate = () => {
+    if (!store.get("showTextPanel")) {
+      store.set("showTextPanel", true);
+      setReaderPanelVisible(true);
+    }
+    win.webContents.send("reader:focus-new-tab");
+    win.webContents.send("reader:show-toast", message);
+  };
+
+  if (win.webContents.isLoading()) {
+    win.webContents.once("did-finish-load", activate);
+  } else {
+    activate();
+  }
+
+  win.show();
+  win.focus();
+}
+
 export function openReaderForNewText(): void {
   const store = getStore();
   const settings = store.store;

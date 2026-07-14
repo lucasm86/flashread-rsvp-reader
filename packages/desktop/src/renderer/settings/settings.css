@@ -103,7 +103,8 @@ input[type="color"] {
   opacity: 1;
 }
 
-button[type="submit"] {
+button[type="submit"],
+.btn {
   background: #3d5ae6;
   border: none;
   color: white;
@@ -113,6 +114,22 @@ button[type="submit"] {
   font-size: 13px;
 }
 
-button[type="submit"]:hover {
+button[type="submit"]:hover,
+.btn:hover {
   background: #4a66ff;
+}
+
+.btn-secondary {
+  background: #333;
+}
+
+.btn-secondary:hover {
+  background: #444;
+}
+
+.btn:disabled,
+.btn:disabled:hover {
+  background: #2a2a2a;
+  color: #777;
+  cursor: default;
 }

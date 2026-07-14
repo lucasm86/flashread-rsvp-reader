@@ -55,6 +55,7 @@ interface FlashReadReaderAPI {
   onSettingsUpdated: (cb: (payload: LoadPayload) => void) => void;
   onPanelVisibility: (cb: (payload: { showTextPanel: boolean }) => void) => void;
   onFocusNewTab: (cb: () => void) => void;
+  onShowToast: (cb: (message: string) => void) => void;
   updateWpm: (wpm: number) => void;
   togglePanel: () => void;
   openSettings: () => void;
@@ -609,6 +610,7 @@ interface Window {
     switchPanelTab("new");
     panelTextInput.focus();
   });
+  window.flashread.onShowToast((message) => showToast(message));
 
   btnPlay.addEventListener("click", toggle);
   document.getElementById("btn-next")!.addEventListener("click", next);

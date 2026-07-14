@@ -15,9 +15,19 @@ interface ReaderSettingsForm {
   convertToMarkdown: boolean;
 }
 
+type FileAssocStatus = "unregistered" | "registered" | "stale";
+
+interface FileAssocState {
+  supported: boolean;
+  status: FileAssocStatus;
+}
+
 interface FlashReadSettingsAPI {
   getSettings: () => Promise<ReaderSettingsForm>;
   updateSettings: (partial: Partial<ReaderSettingsForm>) => Promise<ReaderSettingsForm>;
+  getFileAssocStatus: () => Promise<FileAssocState>;
+  registerFileAssoc: () => Promise<FileAssocState>;
+  unregisterFileAssoc: () => Promise<FileAssocState>;
 }
 
 interface Window {
@@ -90,5 +100,49 @@ interface Window {
     saveStatus.textContent = "Guardado ✓";
     saveStatus.classList.add("visible");
     window.setTimeout(() => saveStatus.classList.remove("visible"), 1500);
+  });
+
+  const fileAssocStatus = document.getElementById("fileAssocStatus") as HTMLParagraphElement;
+  const fileAssocRegisterBtn = document.getElementById("fileAssocRegisterBtn") as HTMLButtonElement;
+  const fileAssocUnregisterBtn = document.getElementById("fileAssocUnregisterBtn") as HTMLButtonElement;
+
+  function renderFileAssocState(state: FileAssocState): void {
+    if (!state.supported) {
+      fileAssocStatus.textContent = "Solo disponible en la versión empaquetada (.exe); no en modo desarrollo.";
+      fileAssocRegisterBtn.disabled = true;
+      fileAssocUnregisterBtn.disabled = true;
+      return;
+    }
+    fileAssocRegisterBtn.disabled = false;
+    fileAssocUnregisterBtn.disabled = state.status === "unregistered";
+    if (state.status === "registered") {
+      fileAssocStatus.textContent = "Registrado para esta instalación.";
+    } else if (state.status === "stale") {
+      fileAssocStatus.textContent = "Registrado, pero apuntando a otra ubicación del .exe — volvé a registrar.";
+    } else {
+      fileAssocStatus.textContent = "No registrado todavía.";
+    }
+  }
+
+  window.flashreadSettings.getFileAssocStatus().then(renderFileAssocState);
+
+  fileAssocRegisterBtn.addEventListener("click", async () => {
+    fileAssocRegisterBtn.disabled = true;
+    try {
+      renderFileAssocState(await window.flashreadSettings.registerFileAssoc());
+    } catch (err) {
+      fileAssocStatus.textContent = `Error al registrar: ${(err as Error).message}`;
+      fileAssocRegisterBtn.disabled = false;
+    }
+  });
+
+  fileAssocUnregisterBtn.addEventListener("click", async () => {
+    fileAssocUnregisterBtn.disabled = true;
+    try {
+      renderFileAssocState(await window.flashreadSettings.unregisterFileAssoc());
+    } catch (err) {
+      fileAssocStatus.textContent = `Error al quitar el registro: ${(err as Error).message}`;
+      fileAssocUnregisterBtn.disabled = false;
+    }
   });
 })();
