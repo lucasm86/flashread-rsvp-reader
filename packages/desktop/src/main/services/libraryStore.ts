@@ -10,6 +10,8 @@ export interface LibraryItem {
   sourceType: TextSource;
   sourceLabel?: string;
   addedAt: number;
+  /** True when `text` is Markdown (from the document-to-Markdown conversion), not plain text. */
+  isMarkdown?: boolean;
 }
 
 export interface HistoryEntry {
@@ -20,6 +22,8 @@ export interface HistoryEntry {
   sourceLabel?: string;
   libraryItemId?: string;
   readAt: number;
+  /** True when `text` is Markdown (from the document-to-Markdown conversion), not plain text. */
+  isMarkdown?: boolean;
 }
 
 interface LibrarySchema {
@@ -59,7 +63,12 @@ export function getLibraryItem(id: string): LibraryItem | undefined {
     .find((i) => i.id === id);
 }
 
-export function addToLibrary(text: string, sourceType: TextSource, sourceLabel?: string): LibraryItem {
+export function addToLibrary(
+  text: string,
+  sourceType: TextSource,
+  sourceLabel?: string,
+  isMarkdown?: boolean
+): LibraryItem {
   const item: LibraryItem = {
     id: randomUUID(),
     title: deriveTitle(text, sourceLabel),
@@ -67,6 +76,7 @@ export function addToLibrary(text: string, sourceType: TextSource, sourceLabel?:
     sourceType,
     sourceLabel,
     addedAt: Date.now(),
+    isMarkdown,
   };
   const s = getStore();
   s.set("items", [...s.get("items"), item]);
@@ -95,7 +105,8 @@ export function addHistoryEntry(
   text: string,
   sourceType: TextSource,
   sourceLabel?: string,
-  libraryItemId?: string
+  libraryItemId?: string,
+  isMarkdown?: boolean
 ): HistoryEntry {
   const entry: HistoryEntry = {
     id: randomUUID(),
@@ -105,6 +116,7 @@ export function addHistoryEntry(
     sourceLabel,
     libraryItemId,
     readAt: Date.now(),
+    isMarkdown,
   };
   const s = getStore();
   const next = [...s.get("history"), entry];

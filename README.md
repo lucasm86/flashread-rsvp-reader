@@ -21,6 +21,11 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
   - Pegado manual en la pestaña "Nuevo" del propio lector
 - **App de bandeja del sistema**, instancia única, configuración persistente local (sin backend, 100% offline).
 - **Empaquetado como `.exe` portátil** (sin instalador) vía `electron-builder` — ver [Empaquetar para distribución](#empaquetar-para-distribución).
+- **Conversión opcional a Markdown** (toggle en Configuración → "Convertir documentos a Markdown antes de leer"): para `.docx` y páginas web leídas con la extensión, preserva encabezados, listas y tablas del documento original.
+  - Los encabezados y los saltos de párrafo agregan una pausa extra en la reproducción, para percibir el cambio de sección.
+  - Las tablas no se leen palabra por palabra: la reproducción se pausa automáticamente y la tabla se muestra completa en el panel lateral; se retoma manualmente.
+  - No afecta a `.pdf` ni `.txt` — se probó contra la librería oficial de Python (`markitdown`) y ningún conversor logra reconstruir estructura confiable a partir de un PDF, así que esos formatos siguen con extracción de texto plano.
+  - Si la conversión falla, cae automáticamente a texto plano y avisa con un mensaje discreto (no bloqueante) en el panel o en el lector.
 
 ## Stack
 
@@ -28,6 +33,7 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
 - Monorepo con npm workspaces: [`packages/core`](packages/core) (parser de texto, chunker, ORP y timing, compartido) + [`packages/desktop`](packages/desktop) (app Electron) + [`packages/extension`](packages/extension) (extensión MV3)
 - `electron-store` para persistencia local de configuración, biblioteca e historial
 - `pdf-parse` / `mammoth` / `epub2` para extracción de texto de PDF/DOCX/EPUB
+- `markitdown-ts` para la conversión opcional a Markdown de `.docx`/HTML (mismo resultado que la librería oficial de Python en esos formatos, sin depender de un runtime de Python)
 - Comunicación extensión↔app vía WebSocket local (`ws://127.0.0.1:17652`, solo loopback)
 - `electron-builder` para empaquetar un `.exe` portátil de Windows
 

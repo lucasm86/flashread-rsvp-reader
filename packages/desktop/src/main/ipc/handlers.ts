@@ -25,6 +25,7 @@ interface OpenReaderPayload {
   text: string;
   sourceLabel?: string;
   saveToLibrary?: boolean;
+  isMarkdown?: boolean;
 }
 
 export function registerIpcHandlers(): void {
@@ -51,15 +52,20 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle("file:extract-text", async (_e, filePath: string) => {
-    return extractTextFromFile(filePath);
+    const convertToMarkdown = getStore().get("convertToMarkdown");
+    return extractTextFromFile(filePath, convertToMarkdown);
   });
 
   ipcMain.on("paste:open-reader", (_e, payload: OpenReaderPayload) => {
     let libraryItemId: string | undefined;
     if (payload.saveToLibrary) {
-      libraryItemId = addToLibrary(payload.text, "paste", payload.sourceLabel).id;
+      libraryItemId = addToLibrary(payload.text, "paste", payload.sourceLabel, payload.isMarkdown).id;
     }
-    openReaderWithText(payload.text, "paste", { sourceLabel: payload.sourceLabel, libraryItemId });
+    openReaderWithText(payload.text, "paste", {
+      sourceLabel: payload.sourceLabel,
+      libraryItemId,
+      isMarkdown: payload.isMarkdown,
+    });
   });
 
   ipcMain.on("reader:update-wpm", (_e, wpm: number) => {
@@ -94,7 +100,11 @@ export function registerIpcHandlers(): void {
   ipcMain.on("library:open", (_e, id: string) => {
     const item = getLibraryItem(id);
     if (item) {
-      openReaderWithText(item.text, "library", { sourceLabel: item.sourceLabel, libraryItemId: item.id });
+      openReaderWithText(item.text, "library", {
+        sourceLabel: item.sourceLabel,
+        libraryItemId: item.id,
+        isMarkdown: item.isMarkdown,
+      });
     }
   });
 
@@ -114,6 +124,7 @@ export function registerIpcHandlers(): void {
       openReaderWithText(entry.text, "history", {
         sourceLabel: entry.sourceLabel,
         libraryItemId: entry.libraryItemId,
+        isMarkdown: entry.isMarkdown,
       });
     }
   });
@@ -121,6 +132,6 @@ export function registerIpcHandlers(): void {
   ipcMain.handle("history:add-to-library", (_e, id: string) => {
     const entry = getHistoryEntry(id);
     if (!entry) return null;
-    return addToLibrary(entry.text, entry.sourceType, entry.sourceLabel);
+    return addToLibrary(entry.text, entry.sourceType, entry.sourceLabel, entry.isMarkdown);
   });
 }

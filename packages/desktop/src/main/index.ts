@@ -29,7 +29,7 @@ if (!gotLock) {
       onQuit: () => app.quit(),
     });
 
-    startLocalServer((text) => openReaderWithText(text, "extension"));
+    startLocalServer((text, opts) => openReaderWithText(text, "extension", opts));
 
     setGlobalShortcut(store.get("globalShortcut"), (text) => {
       openReaderWithText(text, "clipboard");

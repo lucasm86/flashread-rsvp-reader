@@ -12,6 +12,7 @@ interface ReaderSettingsForm {
   alwaysOnTop: boolean;
   globalShortcut: string;
   showTextPanel: boolean;
+  convertToMarkdown: boolean;
 }
 
 interface FlashReadSettingsAPI {
@@ -41,6 +42,7 @@ interface Window {
     alwaysOnTop: document.getElementById("alwaysOnTop") as HTMLInputElement,
     globalShortcut: document.getElementById("globalShortcut") as HTMLInputElement,
     showTextPanel: document.getElementById("showTextPanel") as HTMLInputElement,
+    convertToMarkdown: document.getElementById("convertToMarkdown") as HTMLInputElement,
   };
 
   function populate(settings: ReaderSettingsForm): void {
@@ -57,6 +59,7 @@ interface Window {
     fields.alwaysOnTop.checked = settings.alwaysOnTop;
     fields.globalShortcut.value = settings.globalShortcut;
     fields.showTextPanel.checked = settings.showTextPanel;
+    fields.convertToMarkdown.checked = settings.convertToMarkdown;
   }
 
   function readForm(): Partial<ReaderSettingsForm> {
@@ -74,6 +77,7 @@ interface Window {
       alwaysOnTop: fields.alwaysOnTop.checked,
       globalShortcut: fields.globalShortcut.value || "CommandOrControl+Alt+R",
       showTextPanel: fields.showTextPanel.checked,
+      convertToMarkdown: fields.convertToMarkdown.checked,
     };
   }
 

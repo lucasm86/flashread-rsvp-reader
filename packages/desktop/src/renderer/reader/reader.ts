@@ -4,6 +4,8 @@ interface ChunkData {
   pauseMultiplier: number;
   wordCount: number;
   paragraphIndex: number;
+  type?: "words" | "table";
+  tableMarkdown?: string;
 }
 
 interface ParagraphRange {
@@ -26,6 +28,7 @@ interface LoadPayload {
   chunks: ChunkData[];
   paragraphs: ParagraphRange[];
   settings: ReaderSettingsLike;
+  notice?: string;
 }
 
 interface LibraryItem {
@@ -58,8 +61,8 @@ interface FlashReadReaderAPI {
   closeReader: () => void;
   minimizeReader: () => void;
 
-  loadNewText: (text: string, sourceLabel?: string, saveToLibrary?: boolean) => void;
-  extractFileText: (filePath: string) => Promise<string>;
+  loadNewText: (text: string, sourceLabel?: string, saveToLibrary?: boolean, isMarkdown?: boolean) => void;
+  extractFileText: (filePath: string) => Promise<{ text: string; isMarkdown: boolean; notice?: string }>;
   getPathForFile: (file: File) => string;
 
   getLibrary: () => Promise<LibraryItem[]>;
@@ -85,6 +88,7 @@ interface Window {
   const btnPlay = document.getElementById("btn-play") as HTMLButtonElement;
   const wpmValueEl = document.getElementById("wpm-value") as HTMLSpanElement;
   const timerDisplay = document.getElementById("timer-display") as HTMLSpanElement;
+  const toast = document.getElementById("toast") as HTMLDivElement;
   const controls = document.getElementById("controls") as HTMLDivElement;
   const btnShowControls = document.getElementById("btn-show-controls") as HTMLButtonElement;
   const textPanel = document.getElementById("text-panel") as HTMLDivElement;
@@ -112,6 +116,7 @@ interface Window {
   let chunks: ChunkData[] = [];
   let paragraphs: ParagraphRange[] = [];
   let wordSpans: HTMLElement[] = [];
+  let tableEls: (HTMLElement | undefined)[] = [];
   let currentWordEl: HTMLElement | null = null;
   let settings: ReaderSettingsLike = {
     wpm: 300,
@@ -126,6 +131,7 @@ interface Window {
   let playing = false;
   let timer: number | null = null;
   let remainingMsSuffix: number[] = [];
+  let toastTimer: number | null = null;
 
   function applyStyles(): void {
     const root = document.documentElement.style;
@@ -137,12 +143,47 @@ interface Window {
     wpmValueEl.textContent = String(settings.wpm);
   }
 
+  function renderMarkdownTable(markdown: string): HTMLTableElement {
+    const lines = markdown
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const table = document.createElement("table");
+    table.className = "panel-table";
+    lines.forEach((line, i) => {
+      if (i === 1 && /^\|?[\s:|-]+\|?$/.test(line)) return; // separator row
+      const cells = line
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map((c) => c.trim().replace(/\*\*(.+?)\*\*/g, "$1"));
+      const tr = document.createElement("tr");
+      for (const cellText of cells) {
+        const cell = document.createElement(i === 0 ? "th" : "td");
+        cell.textContent = cellText;
+        tr.appendChild(cell);
+      }
+      table.appendChild(tr);
+    });
+    return table;
+  }
+
   function buildPanel(): void {
     textPanelContent.innerHTML = "";
     wordSpans = new Array(chunks.length);
+    tableEls = new Array(chunks.length);
     currentWordEl = null;
 
     for (const range of paragraphs) {
+      const first = chunks[range.startChunkIndex];
+      if (first.type === "table") {
+        const tableEl = renderMarkdownTable(first.tableMarkdown ?? "");
+        tableEl.addEventListener("click", () => jumpToChunk(range.startChunkIndex));
+        tableEls[range.startChunkIndex] = tableEl;
+        textPanelContent.appendChild(tableEl);
+        continue;
+      }
+
       const p = document.createElement("p");
       for (let i = range.startChunkIndex; i <= range.endChunkIndex; i++) {
         const span = document.createElement("span");
@@ -159,7 +200,7 @@ interface Window {
 
   function updatePanelHighlight(): void {
     if (currentWordEl) currentWordEl.classList.remove("current");
-    const el = wordSpans[index] ?? null;
+    const el = wordSpans[index] ?? tableEls[index] ?? null;
     if (el) {
       el.classList.add("current");
       el.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -170,6 +211,16 @@ interface Window {
   function applyPanelVisibility(showTextPanel: boolean): void {
     textPanel.classList.toggle("visible", showTextPanel);
     btnTogglePanel.classList.toggle("active", showTextPanel);
+  }
+
+  function showToast(message: string): void {
+    if (toastTimer !== null) window.clearTimeout(toastTimer);
+    toast.textContent = message;
+    toast.classList.add("visible");
+    toastTimer = window.setTimeout(() => {
+      toast.classList.remove("visible");
+      toastTimer = null;
+    }, 5000);
   }
 
   function switchPanelTab(name: string): void {
@@ -185,6 +236,7 @@ interface Window {
 
   const PANEL_SUPPORTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".epub"];
   let panelLastFileLabel: string | null = null;
+  let panelLastFileIsMarkdown = false;
 
   function setPanelFileStatus(message: string, isError = false): void {
     panelFileStatus.textContent = message;
@@ -197,9 +249,15 @@ interface Window {
       setPanelFileStatus("Escribí o pegá texto, o arrastrá un archivo.", true);
       return;
     }
-    window.flashread.loadNewText(text, panelLastFileLabel ?? undefined, panelSaveToLibrary.checked);
+    window.flashread.loadNewText(
+      text,
+      panelLastFileLabel ?? undefined,
+      panelSaveToLibrary.checked,
+      panelLastFileIsMarkdown
+    );
     panelTextInput.value = "";
     panelLastFileLabel = null;
+    panelLastFileIsMarkdown = false;
     panelSaveToLibrary.checked = false;
     setPanelFileStatus("");
   }
@@ -213,10 +271,11 @@ interface Window {
     setPanelFileStatus(`Leyendo ${file.name}…`);
     try {
       const path = window.flashread.getPathForFile(file);
-      const text = await window.flashread.extractFileText(path);
-      panelTextInput.value = text;
+      const result = await window.flashread.extractFileText(path);
+      panelTextInput.value = result.text;
       panelLastFileLabel = file.name;
-      setPanelFileStatus(`Listo: ${file.name} (${text.length} caracteres)`);
+      panelLastFileIsMarkdown = result.isMarkdown;
+      setPanelFileStatus(result.notice ?? `Listo: ${file.name} (${result.text.length} caracteres)`);
     } catch (err) {
       setPanelFileStatus(`Error al leer ${file.name}: ${(err as Error).message}`, true);
     }
@@ -233,6 +292,7 @@ interface Window {
 
   panelTextInput.addEventListener("input", () => {
     panelLastFileLabel = null;
+    panelLastFileIsMarkdown = false;
   });
 
   ["dragenter", "dragover"].forEach((evt) => {
@@ -419,10 +479,20 @@ interface Window {
   function renderChunk(): void {
     const chunk = chunks[index];
     if (!chunk) return;
-    const { display, orpIndex } = chunk;
-    wordPre.textContent = display.slice(0, orpIndex);
-    wordOrp.textContent = display.slice(orpIndex, orpIndex + 1);
-    wordPost.textContent = display.slice(orpIndex + 1);
+
+    if (chunk.type === "table") {
+      wordPre.textContent = "";
+      wordOrp.textContent = "▤";
+      wordPost.textContent = " Tabla — ver panel lateral";
+      pause();
+      applyPanelVisibility(true);
+      switchPanelTab("text");
+    } else {
+      const { display, orpIndex } = chunk;
+      wordPre.textContent = display.slice(0, orpIndex);
+      wordOrp.textContent = display.slice(orpIndex, orpIndex + 1);
+      wordPost.textContent = display.slice(orpIndex + 1);
+    }
 
     const denom = chunks.length > 1 ? chunks.length - 1 : 1;
     const pct = (index / denom) * 100;
@@ -464,6 +534,8 @@ interface Window {
   function play(): void {
     if (chunks.length === 0) return;
     if (index >= chunks.length - 1) index = 0;
+    // Resuming on a table pause point: step past it instead of "playing" it.
+    if (chunks[index]?.type === "table" && index < chunks.length - 1) index++;
     playing = true;
     btnPlay.textContent = "⏸";
     renderChunk();
@@ -520,6 +592,7 @@ interface Window {
     renderChunk();
     if (resetPosition) switchPanelTab("text");
     if (resetPosition || wasPlaying) play();
+    if (resetPosition && payload.notice) showToast(payload.notice);
   }
 
   window.flashread.onLoadText((payload) => loadPayload(payload, true));

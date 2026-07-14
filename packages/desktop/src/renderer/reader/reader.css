@@ -194,6 +194,31 @@ body {
   font-weight: 600;
 }
 
+.panel-table {
+  width: 100%;
+  margin: 0 0 14px;
+  border-collapse: collapse;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.panel-table th,
+.panel-table td {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 6px;
+  text-align: left;
+}
+
+.panel-table th {
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 600;
+}
+
+.panel-table.current {
+  outline: 2px solid var(--orp-color, #e63946);
+  outline-offset: 2px;
+}
+
 #controls {
   position: absolute;
   left: 50%;
@@ -279,6 +304,29 @@ body {
 #btn-show-controls.visible {
   opacity: 1;
   pointer-events: auto;
+}
+
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: 56px;
+  transform: translate(-50%, 6px);
+  max-width: 80%;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--text-color, #e5e5e5);
+  font-size: 11px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+  z-index: 4;
+}
+
+#toast.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 #window-controls {

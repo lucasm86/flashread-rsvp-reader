@@ -15,6 +15,10 @@ export interface Chunk {
   pauseMultiplier: number;
   /** Paragraph this chunk belongs to. Chunks never span two paragraphs. */
   paragraphIndex: number;
+  /** "table" marks a chunk that holds a whole Markdown table instead of RSVP words. */
+  type?: "words" | "table";
+  /** Raw Markdown source for a "table" chunk, rendered in the side panel instead of flashed word by word. */
+  tableMarkdown?: string;
 }
 
 /** A contiguous run of chunks that make up one paragraph, for the side text panel. */
@@ -44,6 +48,8 @@ export interface ReaderSettings extends PunctuationPauseSettings {
   globalShortcut: string;
   /** Whether the full-text side panel is shown by default when the reader opens. */
   showTextPanel: boolean;
+  /** Convert .docx/HTML documents to Markdown before reading, to preserve headings/lists/tables. */
+  convertToMarkdown: boolean;
 }
 
 export const DEFAULT_SETTINGS: ReaderSettings = {
@@ -60,4 +66,5 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   alwaysOnTop: true,
   globalShortcut: "CommandOrControl+Alt+R",
   showTextPanel: false,
+  convertToMarkdown: false,
 };

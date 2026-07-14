@@ -3,3 +3,9 @@ dist/
 *.log
 .DS_Store
 release/
+
+# Local test documents (contracts used to validate the Markdown converter) — never publish these.
+/0*_contrato_*.pdf
+/0*_contrato_*.docx
+/0*_anexo_*.pdf
+/0*_anexo_*.docx

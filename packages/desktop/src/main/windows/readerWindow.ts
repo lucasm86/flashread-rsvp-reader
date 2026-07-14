@@ -1,6 +1,13 @@
 import { BrowserWindow, screen } from "electron";
 import path from "node:path";
-import { ReaderSettings, ParagraphRange, parseDocument, buildChunks, buildParagraphRanges } from "@flashread/core";
+import {
+  ReaderSettings,
+  ParagraphRange,
+  parseDocument,
+  buildChunks,
+  buildParagraphRanges,
+  buildMarkdownChunks,
+} from "@flashread/core";
 import { getStore } from "../services/store";
 import { TextSource, addHistoryEntry } from "../services/libraryStore";
 
@@ -12,6 +19,7 @@ const MIN_HEIGHT = 180;
 
 let readerWin: BrowserWindow | null = null;
 let currentRawText: string | null = null;
+let currentIsMarkdown = false;
 
 interface ChunkPayload {
   chunks: {
@@ -20,18 +28,22 @@ interface ChunkPayload {
     pauseMultiplier: number;
     wordCount: number;
     paragraphIndex: number;
+    type?: "words" | "table";
+    tableMarkdown?: string;
   }[];
   paragraphs: ParagraphRange[];
   settings: ReaderSettings;
+  notice?: string;
 }
 
 function windowWidthFor(showTextPanel: boolean): number {
   return showTextPanel ? BASE_WIDTH + PANEL_WIDTH : BASE_WIDTH;
 }
 
-function buildPayload(text: string, settings: ReaderSettings): ChunkPayload {
-  const tokens = parseDocument(text);
-  const chunks = buildChunks(tokens, settings.chunkSize, settings);
+function buildPayload(text: string, settings: ReaderSettings, isMarkdown: boolean, notice?: string): ChunkPayload {
+  const chunks = isMarkdown
+    ? buildMarkdownChunks(text, settings.chunkSize, settings)
+    : buildChunks(parseDocument(text), settings.chunkSize, settings);
   const paragraphs = buildParagraphRanges(chunks);
   return {
     chunks: chunks.map((c) => ({
@@ -40,9 +52,12 @@ function buildPayload(text: string, settings: ReaderSettings): ChunkPayload {
       pauseMultiplier: c.pauseMultiplier,
       wordCount: c.words.length,
       paragraphIndex: c.paragraphIndex,
+      type: c.type,
+      tableMarkdown: c.tableMarkdown,
     })),
     paragraphs,
     settings,
+    notice,
   };
 }
 
@@ -85,16 +100,21 @@ export interface OpenReaderOptions {
   libraryItemId?: string;
   /** Skip logging a history entry (used when the caller already logged one). */
   skipHistory?: boolean;
+  /** True when `text` is Markdown (from the document-to-Markdown conversion), not plain text. */
+  isMarkdown?: boolean;
+  /** Discreet, non-blocking message shown once in the reader (e.g. Markdown-conversion fallback notice). */
+  notice?: string;
 }
 
 export function openReaderWithText(text: string, source: TextSource, opts: OpenReaderOptions = {}): void {
   currentRawText = text;
+  currentIsMarkdown = !!opts.isMarkdown;
   if (!opts.skipHistory) {
-    addHistoryEntry(text, source, opts.sourceLabel, opts.libraryItemId);
+    addHistoryEntry(text, source, opts.sourceLabel, opts.libraryItemId, opts.isMarkdown);
   }
   const settings = getStore().store;
   const win = getOrCreateReaderWindow(settings);
-  const payload = buildPayload(text, settings);
+  const payload = buildPayload(text, settings, currentIsMarkdown, opts.notice);
 
   const send = () => win.webContents.send("reader:load-text", payload);
   if (win.webContents.isLoading()) {
@@ -133,7 +153,7 @@ export function openReaderForNewText(): void {
 export function refreshReaderChunks(settings: ReaderSettings): void {
   if (!readerWin || readerWin.isDestroyed() || !currentRawText) return;
   readerWin.setAlwaysOnTop(settings.alwaysOnTop);
-  const payload = buildPayload(currentRawText, settings);
+  const payload = buildPayload(currentRawText, settings, currentIsMarkdown);
   readerWin.webContents.send("reader:settings-updated", payload);
 }
 

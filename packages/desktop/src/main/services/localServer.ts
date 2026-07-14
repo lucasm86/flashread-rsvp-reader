@@ -1,7 +1,13 @@
 import { WebSocketServer } from "ws";
 import { extractTextFromBuffer } from "./fileParserService";
+import { getStore } from "./store";
 
 export const LOCAL_SERVER_PORT = 17652;
+
+export interface ReceivedTextOptions {
+  isMarkdown?: boolean;
+  notice?: string;
+}
 
 function isAllowedOrigin(origin: string | undefined): boolean {
   if (!origin) return false;
@@ -13,7 +19,7 @@ function isAllowedOrigin(origin: string | undefined): boolean {
  * Bound to 127.0.0.1 (never 0.0.0.0) and rejects connections whose Origin
  * header isn't a browser extension origin.
  */
-export function startLocalServer(onText: (text: string) => void): WebSocketServer {
+export function startLocalServer(onText: (text: string, opts?: ReceivedTextOptions) => void): WebSocketServer {
   const wss = new WebSocketServer({ host: "127.0.0.1", port: LOCAL_SERVER_PORT });
 
   wss.on("connection", (socket, request) => {
@@ -40,9 +46,10 @@ export function startLocalServer(onText: (text: string) => void): WebSocketServe
             typeof msg.ext === "string"
           ) {
             const buffer = Buffer.from(msg.dataBase64, "base64");
-            const text = await extractTextFromBuffer(buffer, msg.ext);
+            const convertToMarkdown = getStore().get("convertToMarkdown");
+            const { text, isMarkdown, notice } = await extractTextFromBuffer(buffer, msg.ext, convertToMarkdown);
             if (text.trim()) {
-              onText(text);
+              onText(text, { isMarkdown, notice });
               socket.send(JSON.stringify({ type: "ack" }));
             } else {
               socket.send(JSON.stringify({ type: "error", message: "No se encontró texto en el archivo." }));

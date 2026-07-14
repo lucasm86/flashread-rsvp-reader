@@ -61,11 +61,15 @@ async function handleReadPage(tab) {
   try {
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: () => (document.body ? document.body.innerText : ""),
+      func: () => document.documentElement.outerHTML,
     });
-    const text = (result || "").trim();
-    if (text) sendToFlashRead({ type: "read-text", text });
-    else notify("No se encontró texto en esta página.");
+    const html = (result || "").trim();
+    if (html) {
+      const bytes = new TextEncoder().encode(html);
+      sendToFlashRead({ type: "read-file", ext: ".html", dataBase64: arrayBufferToBase64(bytes.buffer) });
+    } else {
+      notify("No se encontró texto en esta página.");
+    }
   } catch {
     notify("No se pudo leer el contenido de esta página.");
   }
