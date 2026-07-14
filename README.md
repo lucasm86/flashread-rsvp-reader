@@ -100,10 +100,6 @@ Genera `packages/desktop/release/FlashRead <version>.exe` — un ejecutable port
 
 La barra de controles también tiene botones ⏪/⏩ para saltar de párrafo, un contador `hh:mm:ss` con el tiempo estimado restante (recalculado en base a las palabras que faltan, la velocidad actual y las pausas de puntuación), y la esquina superior derecha de la ventana tiene minimizar/cerrar discretos (la ventana no usa marco nativo).
 
-## Fase 2 (pendiente)
-
-- Evaluar un add-in nativo de Word (Office JS)
-
 ## Licencia
 
 Sin definir todavía.
