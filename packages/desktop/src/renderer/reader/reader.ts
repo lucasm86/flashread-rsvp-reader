@@ -64,6 +64,7 @@ interface FlashReadReaderAPI {
 
   loadNewText: (text: string, sourceLabel?: string, saveToLibrary?: boolean, isMarkdown?: boolean) => void;
   extractFileText: (filePath: string) => Promise<{ text: string; isMarkdown: boolean; notice?: string }>;
+  extractUrlText: (url: string) => Promise<{ text: string; isMarkdown: boolean; notice?: string }>;
   getPathForFile: (file: File) => string;
 
   getLibrary: () => Promise<LibraryItem[]>;
@@ -104,6 +105,8 @@ interface Window {
     history: document.getElementById("panel-tab-history")!,
   };
   const panelDropzone = document.getElementById("panel-dropzone") as HTMLDivElement;
+  const panelUrlInput = document.getElementById("panel-url-input") as HTMLInputElement;
+  const panelBtnReadUrl = document.getElementById("panel-btn-read-url") as HTMLButtonElement;
   const panelTextInput = document.getElementById("panel-text-input") as HTMLTextAreaElement;
   const panelFileStatus = document.getElementById("panel-file-status") as HTMLParagraphElement;
   const panelBtnRead = document.getElementById("panel-btn-read") as HTMLButtonElement;
@@ -281,6 +284,36 @@ interface Window {
       setPanelFileStatus(`Error al leer ${file.name}: ${(err as Error).message}`, true);
     }
   }
+
+  async function handlePanelUrl(): Promise<void> {
+    const url = panelUrlInput.value.trim();
+    if (!url) {
+      setPanelFileStatus("Pegá una URL para leer.", true);
+      return;
+    }
+    setPanelFileStatus(`Descargando ${url}…`);
+    panelBtnReadUrl.disabled = true;
+    try {
+      const result = await window.flashread.extractUrlText(url);
+      panelTextInput.value = result.text;
+      panelLastFileLabel = url;
+      panelLastFileIsMarkdown = result.isMarkdown;
+      setPanelFileStatus(result.notice ?? `Listo: ${url} (${result.text.length} caracteres)`);
+      panelUrlInput.value = "";
+    } catch (err) {
+      setPanelFileStatus(`Error al leer la URL: ${(err as Error).message}`, true);
+    } finally {
+      panelBtnReadUrl.disabled = false;
+    }
+  }
+
+  panelBtnReadUrl.addEventListener("click", () => void handlePanelUrl());
+  panelUrlInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      void handlePanelUrl();
+    }
+  });
 
   panelBtnRead.addEventListener("click", startPanelReading);
 

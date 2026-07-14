@@ -434,6 +434,38 @@ body {
   filter: brightness(1.15);
 }
 
+#panel-url-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #444;
+  color: var(--text-color, #e5e5e5);
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+#panel-btn-read-url {
+  background: #3d5ae6;
+  border: none;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#panel-btn-read-url:hover {
+  filter: brightness(1.15);
+}
+
+#panel-btn-read-url:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 #panel-tab-library,
 #panel-tab-history {
   padding: 10px 12px;

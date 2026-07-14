@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { getStore } from "../services/store";
 import { extractTextFromFile } from "../services/fileParserService";
+import { extractTextFromUrl } from "../services/urlFetchService";
 import { setGlobalShortcut } from "../services/shortcutManager";
 import {
   registerFileAssociations,
@@ -60,6 +61,11 @@ export function registerIpcHandlers(): void {
   ipcMain.handle("file:extract-text", async (_e, filePath: string) => {
     const convertToMarkdown = getStore().get("convertToMarkdown");
     return extractTextFromFile(filePath, convertToMarkdown);
+  });
+
+  ipcMain.handle("url:extract-text", async (_e, url: string) => {
+    const convertToMarkdown = getStore().get("convertToMarkdown");
+    return extractTextFromUrl(url, convertToMarkdown);
   });
 
   ipcMain.on("paste:open-reader", (_e, payload: OpenReaderPayload) => {

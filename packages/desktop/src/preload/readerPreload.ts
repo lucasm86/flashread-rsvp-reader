@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld("flashread", {
   loadNewText: (text: string, sourceLabel?: string, saveToLibrary?: boolean, isMarkdown?: boolean) =>
     ipcRenderer.send("paste:open-reader", { text, sourceLabel, saveToLibrary, isMarkdown }),
   extractFileText: (filePath: string) => ipcRenderer.invoke("file:extract-text", filePath),
+  extractUrlText: (url: string) => ipcRenderer.invoke("url:extract-text", url),
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
 
   getLibrary: () => ipcRenderer.invoke("library:get"),
