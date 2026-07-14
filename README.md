@@ -120,6 +120,17 @@ Sube ambos instaladores más el feed `latest.yml` directo a un GitHub Release co
 
 La barra de controles también tiene botones ⏪/⏩ para saltar de párrafo, un contador `hh:mm:ss` con el tiempo estimado restante (recalculado en base a las palabras que faltan, la velocidad actual y las pausas de puntuación), y la esquina superior derecha de la ventana tiene minimizar/cerrar discretos (la ventana no usa marco nativo).
 
+## Firma de código
+
+FlashRead está aplicando al programa de firma de código gratuita para proyectos open source de SignPath Foundation. Mientras se resuelve la aplicación, los ejecutables de la [Release](https://github.com/lucasm86/flashread-rsvp-reader/releases) no están firmados.
+
+Cuando la firma esté activa:
+
+*Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org)*
+
+- **Autor/Revisor/Aprobador**: [lucasm86](https://github.com/lucasm86) (proyecto de una sola persona; los tres roles los cumple la misma cuenta).
+- **Privacidad**: este programa no transfiere ninguna información a otros sistemas en red salvo que se solicite explícitamente.
+
 ## Licencia
 
 [MIT](LICENSE).
