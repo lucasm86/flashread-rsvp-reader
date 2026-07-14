@@ -268,7 +268,7 @@ interface Window {
     btn.addEventListener("click", () => switchPanelTab(btn.dataset.panelTab as string));
   });
 
-  const PANEL_SUPPORTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".epub"];
+  const PANEL_SUPPORTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".epub", ".rtf", ".odt"];
   let panelLastFileLabel: string | null = null;
   let panelLastFileIsMarkdown = false;
 

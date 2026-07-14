@@ -8,11 +8,8 @@ const PROG_ID = "FlashRead.Document";
 const VERB_NAME = "FlashRead";
 const VERB_LABEL = "Leer con FlashRead";
 
-/**
- * .pdf/.docx/.txt per the Phase 2 spec, plus .epub since the app already
- * supports it as a first-class drag&drop format.
- */
-export const ASSOCIABLE_EXTENSIONS = [".txt", ".pdf", ".docx", ".epub"];
+/** Every format the app can read as a first-class drag&drop/panel input. */
+export const ASSOCIABLE_EXTENSIONS = [".txt", ".pdf", ".docx", ".epub", ".rtf", ".odt"];
 
 export type FileAssocStatus = "unregistered" | "registered" | "stale";
 

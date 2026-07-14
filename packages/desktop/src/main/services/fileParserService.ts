@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { convertBufferToMarkdown, isMarkdownConvertible } from "./markdownConverter";
 
-const SUPPORTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".epub", ".html"];
+const SUPPORTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".epub", ".html", ".rtf", ".odt"];
 
 export interface ExtractResult {
   text: string;
@@ -58,16 +58,32 @@ async function extractDocxPlainText(buffer: Buffer): Promise<string> {
   return result.value;
 }
 
+/** Plain-text extraction via officeparser, used for .rtf (always) and .odt (Markdown-conversion fallback). */
+async function extractOfficeParserPlainText(buffer: Buffer, fileType: "rtf" | "odt"): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { convert } = require("officeparser");
+  const { value } = await convert(buffer, "text", { parseConfig: { fileType } });
+  return value;
+}
+
+async function extractPlainTextForMarkdownGroup(normalizedExt: string, buffer: Buffer): Promise<string> {
+  if (normalizedExt === ".docx") return extractDocxPlainText(buffer);
+  if (normalizedExt === ".odt") return extractOfficeParserPlainText(buffer, "odt");
+  return stripHtml(buffer.toString("utf-8"));
+}
+
 /**
  * Extracts text from raw file bytes already in memory (used by the local
  * WS server, which receives files from the browser extension without
  * ever writing them to disk itself — except EPUB, which epub2 can only
  * read from a real path, so that one case uses a short-lived temp file).
  *
- * `convertToMarkdown` only affects .docx and .html: PDF has no reliable
- * structure for either MarkItDown implementation to preserve (verified
- * against real contracts — headings/nested lists never survive, and
- * tables come out scrambled), so it always stays on plain-text extraction.
+ * `convertToMarkdown` only affects .docx, .html and .odt: PDF and RTF have
+ * no reliable structure for their respective converters to preserve
+ * (verified against real contracts for PDF, and against synthetic test
+ * docs for RTF — officeparser tags every RTF paragraph as an H1, since RTF
+ * has no real heading markup to key off), so both always stay on
+ * plain-text extraction regardless of the toggle.
  */
 export async function extractTextFromBuffer(
   buffer: Buffer,
@@ -87,14 +103,17 @@ export async function extractTextFromBuffer(
     return { text: data.text, isMarkdown: false };
   }
 
-  if (normalizedExt === ".docx" || normalizedExt === ".html") {
+  if (normalizedExt === ".rtf") {
+    return { text: await extractOfficeParserPlainText(buffer, "rtf"), isMarkdown: false };
+  }
+
+  if (normalizedExt === ".docx" || normalizedExt === ".html" || normalizedExt === ".odt") {
     if (convertToMarkdown && isMarkdownConvertible(normalizedExt)) {
       try {
         const markdown = await convertBufferToMarkdown(buffer, normalizedExt);
         return { text: markdown, isMarkdown: true };
       } catch (err) {
-        const plain =
-          normalizedExt === ".docx" ? await extractDocxPlainText(buffer) : stripHtml(buffer.toString("utf-8"));
+        const plain = await extractPlainTextForMarkdownGroup(normalizedExt, buffer);
         return {
           text: plain,
           isMarkdown: false,
@@ -102,8 +121,7 @@ export async function extractTextFromBuffer(
         };
       }
     }
-    const plain =
-      normalizedExt === ".docx" ? await extractDocxPlainText(buffer) : stripHtml(buffer.toString("utf-8"));
+    const plain = await extractPlainTextForMarkdownGroup(normalizedExt, buffer);
     return { text: plain, isMarkdown: false };
   }
 
