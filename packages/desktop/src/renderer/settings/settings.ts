@@ -22,12 +22,19 @@ interface FileAssocState {
   status: FileAssocStatus;
 }
 
+interface UpdateCheckResult {
+  status: "up-to-date" | "update-available" | "error";
+  message: string;
+}
+
 interface FlashReadSettingsAPI {
   getSettings: () => Promise<ReaderSettingsForm>;
   updateSettings: (partial: Partial<ReaderSettingsForm>) => Promise<ReaderSettingsForm>;
   getFileAssocStatus: () => Promise<FileAssocState>;
   registerFileAssoc: () => Promise<FileAssocState>;
   unregisterFileAssoc: () => Promise<FileAssocState>;
+  getAppVersion: () => Promise<string>;
+  checkForUpdates: () => Promise<UpdateCheckResult>;
 }
 
 interface Window {
@@ -143,6 +150,25 @@ interface Window {
     } catch (err) {
       fileAssocStatus.textContent = `Error al quitar el registro: ${(err as Error).message}`;
       fileAssocUnregisterBtn.disabled = false;
+    }
+  });
+
+  const appVersionEl = document.getElementById("appVersion") as HTMLSpanElement;
+  const updateStatus = document.getElementById("updateStatus") as HTMLParagraphElement;
+  const checkUpdatesBtn = document.getElementById("checkUpdatesBtn") as HTMLButtonElement;
+
+  window.flashreadSettings.getAppVersion().then((v) => (appVersionEl.textContent = v));
+
+  checkUpdatesBtn.addEventListener("click", async () => {
+    checkUpdatesBtn.disabled = true;
+    updateStatus.textContent = "Buscando…";
+    try {
+      const result = await window.flashreadSettings.checkForUpdates();
+      updateStatus.textContent = result.message;
+    } catch (err) {
+      updateStatus.textContent = `Error: ${(err as Error).message}`;
+    } finally {
+      checkUpdatesBtn.disabled = false;
     }
   });
 })();

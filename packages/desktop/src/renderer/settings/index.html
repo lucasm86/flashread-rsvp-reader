@@ -106,6 +106,20 @@
       </fieldset>
 
       <fieldset>
+        <legend>Actualizaciones</legend>
+
+        <p class="hint">Versión actual: <span id="appVersion">—</span></p>
+        <p class="hint">
+          El chequeo automático al iniciar y este botón solo aplican a la versión instalada con
+          instalador; la versión portátil no se actualiza sola, hay que volver a descargarla.
+        </p>
+        <p id="updateStatus" class="hint"></p>
+        <div class="actions" style="justify-content: flex-start">
+          <button type="button" id="checkUpdatesBtn" class="btn">Buscar actualizaciones</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
         <legend>Comportamiento</legend>
 
         <label class="checkbox">

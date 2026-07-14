@@ -9,6 +9,9 @@ import { registerIpcHandlers } from "./ipc/handlers";
 import { extractTextFromFile, isSupportedFile } from "./services/fileParserService";
 import { openReaderWithText, openReaderForNewText, openReaderWithError } from "./windows/readerWindow";
 import { openSettingsWindow } from "./windows/settingsWindow";
+import { initUpdater, checkForUpdatesSilently, checkForUpdatesManual, showUpdateCheckDialog } from "./services/updater";
+
+const UPDATE_CHECK_DELAY_MS = 10_000;
 
 const gotLock = app.requestSingleInstanceLock();
 
@@ -62,6 +65,9 @@ if (!gotLock) {
     createTray({
       onOpenPaste: () => openReaderForNewText(),
       onOpenSettings: () => openSettingsWindow(),
+      onCheckForUpdates: () => {
+        void checkForUpdatesManual().then(showUpdateCheckDialog);
+      },
       onQuit: () => app.quit(),
     });
 
@@ -74,6 +80,10 @@ if (!gotLock) {
     // First launch of the app itself via "Abrir con"/the context menu.
     const filePath = extractFileArgFromArgv(process.argv);
     if (filePath) void openFileArg(filePath);
+
+    initUpdater();
+    // Delayed so it never competes with the app's own cold-start work above.
+    setTimeout(() => checkForUpdatesSilently(), UPDATE_CHECK_DELAY_MS);
   });
 
   // No-op listener: intentionally NOT calling app.quit() here so the app

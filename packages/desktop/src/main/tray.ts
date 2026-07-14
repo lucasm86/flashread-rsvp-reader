@@ -16,6 +16,7 @@ function makeTrayIcon(size = 16): NativeImage {
 export interface TrayHandlers {
   onOpenPaste: () => void;
   onOpenSettings: () => void;
+  onCheckForUpdates: () => void;
   onQuit: () => void;
 }
 
@@ -26,6 +27,7 @@ export function createTray(handlers: TrayHandlers): Tray {
   const menu = Menu.buildFromTemplate([
     { label: "Pegar texto / Arrastrar archivo…", click: handlers.onOpenPaste },
     { label: "Configuración…", click: handlers.onOpenSettings },
+    { label: "Buscar actualizaciones…", click: handlers.onCheckForUpdates },
     { type: "separator" },
     { label: "Salir", click: handlers.onQuit },
   ]);

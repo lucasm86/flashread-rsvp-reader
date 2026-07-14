@@ -7,6 +7,7 @@ import {
   unregisterFileAssociations,
   getFileAssociationState,
 } from "../services/fileAssociations";
+import { checkForUpdatesManual, getAppVersion } from "../services/updater";
 import {
   getLibrary,
   getLibraryItem,
@@ -151,4 +152,8 @@ export function registerIpcHandlers(): void {
     await unregisterFileAssociations();
     return getFileAssociationState();
   });
+
+  ipcMain.handle("app:get-version", () => getAppVersion());
+
+  ipcMain.handle("updates:check", () => checkForUpdatesManual());
 }

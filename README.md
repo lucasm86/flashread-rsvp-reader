@@ -21,7 +21,8 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
   - Pegado manual en la pestaña "Nuevo" del propio lector
   - **"Abrir con FlashRead"** o **"Leer con FlashRead"** desde el menú contextual del Explorador de Windows, para `.txt`/`.pdf`/`.docx`/`.epub` (una vez registrado desde Configuración → "Integración con Windows")
 - **App de bandeja del sistema**, instancia única, configuración persistente local (sin backend, 100% offline).
-- **Empaquetado como `.exe` portátil** (sin instalador) vía `electron-builder` — ver [Empaquetar para distribución](#empaquetar-para-distribución).
+- **Empaquetado como instalador NSIS o `.exe` portátil** vía `electron-builder` — ver [Empaquetar para distribución](#empaquetar-para-distribución).
+- **Actualizaciones automáticas** (solo la versión instalada con instalador): chequeo silencioso al iniciar, más "Buscar actualizaciones" desde la bandeja o Configuración. Descarga en segundo plano y pide confirmación antes de reiniciar para instalar.
 - **Conversión opcional a Markdown** (toggle en Configuración → "Convertir documentos a Markdown antes de leer"): para `.docx` y páginas web leídas con la extensión, preserva encabezados, listas y tablas del documento original.
   - Los encabezados y los saltos de párrafo agregan una pausa extra en la reproducción, para percibir el cambio de sección.
   - Las tablas no se leen palabra por palabra: la reproducción se pausa automáticamente y la tabla se muestra completa en el panel lateral; se retoma manualmente.
@@ -40,7 +41,8 @@ El objetivo del proyecto es la **fricción cero para llevar cualquier texto al l
 - `pdf-parse` / `mammoth` / `epub2` para extracción de texto de PDF/DOCX/EPUB
 - `markitdown-ts` para la conversión opcional a Markdown de `.docx`/HTML (mismo resultado que la librería oficial de Python en esos formatos, sin depender de un runtime de Python)
 - Comunicación extensión↔app vía WebSocket local (`ws://127.0.0.1:17652`, solo loopback)
-- `electron-builder` para empaquetar un `.exe` portátil de Windows
+- `electron-builder` para empaquetar el instalador NSIS y el `.exe` portátil de Windows
+- `electron-updater` para las actualizaciones automáticas de la versión instalada, vía GitHub Releases
 
 ## Estructura
 
@@ -85,7 +87,20 @@ cd packages/desktop
 npm run dist:win
 ```
 
-Genera `packages/desktop/release/FlashRead <version>.exe` — un ejecutable portátil (sin instalador). Copialo a tu Escritorio o anclalo a la barra de tareas; no necesita Node ni la terminal para correr.
+Genera dos artefactos en `packages/desktop/release/`:
+- `FlashRead Setup <version>.exe` — instalador (NSIS, por usuario, sin permisos de administrador). Es la única variante que recibe actualizaciones automáticas.
+- `FlashRead <version>.exe` — portátil, sin instalador. Cómodo para probar o para quien prefiera no instalar nada, pero hay que volver a descargarlo a mano en cada versión nueva.
+
+Copiá el que prefieras a tu Escritorio o anclalo a la barra de tareas; ninguno necesita Node ni la terminal para correr.
+
+#### Publicar una nueva versión (con actualizaciones automáticas)
+
+```bash
+cd packages/desktop
+GH_TOKEN=$(gh auth token) npm run release:win
+```
+
+Sube ambos instaladores más el feed `latest.yml` directo a un GitHub Release con el tag de la versión (`build.publish` en `package.json` apunta al repo). Los usuarios con la versión instalada (NSIS) reciben la actualización sola, sin hacer nada.
 
 ### Atajos dentro del lector
 

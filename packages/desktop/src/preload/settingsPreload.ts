@@ -7,4 +7,6 @@ contextBridge.exposeInMainWorld("flashreadSettings", {
   getFileAssocStatus: () => ipcRenderer.invoke("fileAssoc:status"),
   registerFileAssoc: () => ipcRenderer.invoke("fileAssoc:register"),
   unregisterFileAssoc: () => ipcRenderer.invoke("fileAssoc:unregister"),
+  getAppVersion: () => ipcRenderer.invoke("app:get-version"),
+  checkForUpdates: () => ipcRenderer.invoke("updates:check"),
 });
