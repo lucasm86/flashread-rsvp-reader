@@ -1,6 +1,6 @@
 {
   "name": "@flashread/desktop",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Lector RSVP para Windows",
   "author": "lucasm86",
@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@flashread/core": "0.1.0",
+    "@mozilla/readability": "^0.6.0",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.8.9",
     "epub2": "^3.0.2",
+    "jsdom": "^25.0.1",
     "mammoth": "^1.8.0",
     "markitdown-ts": "^0.0.10",
     "officeparser": "^7.3.0",
@@ -25,6 +27,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^22.7.0",
     "@types/ws": "^8.5.12",
     "electron": "33.4.11",
